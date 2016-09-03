@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * Support module for YAML form related testing.
+ */
+
+use \Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function yamlform_test_theme() {
+  return [
+    'yamlform_handler_test_summary' => [
+      'variables' => ['settings' => NULL, 'handler' => []],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_yamlform_options_YAMLFORM_OPTIONS_ID_alter().
+ */
+function yamlform_test_yamlform_options_test_alter(array &$options, array &$element) {
+  // Set three options.
+  $options['one'] = 'one';
+  $options['two'] = 'two';
+  $options['three'] = 'three';
+}
+
+/**
+ * Implements hook_yamlform_form_FORM_ID_alter().
+ */
+function yamlform_test_form_yamlform_submission_test_form_validate_form_alter(array &$form, FormStateInterface $form_state) {
+  $form['elements']['custom']['#description'] = t('Field is <b>required</b> using custom validation handler.');
+  $form['#validate'][] = 'yamlform_test_form_yamlform_submission_test_form_validate_form_validate';
+}
+
+/**
+ * Implements hook_form_validate().
+ */
+function yamlform_test_form_yamlform_submission_test_form_validate_form_validate($form, FormStateInterface $form_state) {
+  if (!$form_state->getValue('custom')) {
+    $form_state->setErrorByName('custom', t('Custom element is required.'));
+  }
+}
+
+/**
+ * Implements hook_yamlform_load().
+ */
+function yamlform_test_yamlform_load(array $entities) {
+  foreach ($entities as $id => $entity) {
+    if (strpos($id, 'test_form_long_') === 0 && !$entity->getElementsRaw()) {
+      $length = (int) str_replace('test_form_long_', '', $id);
+      $elements = [];
+      for ($i = 1; $i <= $length; $i++) {
+        $elements["element_$i"] = [
+          '#type' => 'textfield',
+          '#title' => (string) t('Element #@index', ['@index' => $i]),
+        ];
+      }
+      $entity->setElements($elements);
+    }
+  }
+}
