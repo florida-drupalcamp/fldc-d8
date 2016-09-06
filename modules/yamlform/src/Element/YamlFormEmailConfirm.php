@@ -102,7 +102,7 @@ class YamlFormEmailConfirm extends FormElement {
     $element['#element_validate'] = [[get_called_class(), 'validateEmailConfirm']];
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     return $element;
   }
@@ -111,25 +111,37 @@ class YamlFormEmailConfirm extends FormElement {
    * Validates an email confirm element.
    */
   public static function validateEmailConfirm(&$element, FormStateInterface $form_state, &$complete_form) {
+
     $mail_1 = trim($element['mail_1']['#value']);
     $mail_2 = trim($element['mail_2']['#value']);
-    if ((!empty($mail_1) || !empty($mail_2)) && strcmp($mail_1, $mail_2)) {
-      $form_state->setError($element['mail_2'], t('The specified email addresses do not match.'));
-    }
-    else {
-      // NOTE: Only mail_1 needs to be validated since mail_2 is the same value.
-      // Verify the required value.
-      if ($element['mail_1']['#required'] && empty($mail_1)) {
-        $form_state->setError($element, t('@name field is required.', ['@name' => $element['mail_1']['#title']]));
+    $has_access = (!isset($element['#access']) || $element['#access'] === TRUE);
+    if ($has_access) {
+      if ((!empty($mail_1) || !empty($mail_2)) && strcmp($mail_1, $mail_2)) {
+        $form_state->setError($element['mail_2'], t('The specified email addresses do not match.'));
       }
-      // Verify that the value is not longer than #maxlength.
-      if (isset($element['mail_1']['#maxlength']) && Unicode::strlen($mail_1) > $element['mail_1']['#maxlength']) {
-        $t_args = [
-          '@name' => $element['mail_1']['#title'],
-          '%max' => $element['mail_1']['#maxlength'],
-          '%length' => Unicode::strlen($mail_1),
-        ];
-        $form_state->setError($element, t('@name cannot be longer than %max characters but is currently %length characters long.', $t_args));
+      else {
+        // NOTE: Only mail_1 needs to be validated since mail_2 is the same value.
+        // Verify the required value.
+        if ($element['mail_1']['#required'] && empty($mail_1)) {
+          if (isset($element['#required_error'])) {
+            $form_state->setError($element, $element['#required_error']);
+          }
+          elseif (isset($element['mail_1']['#title'])) {
+            $form_state->setError($element, t('@name field is required.', ['@name' => $element['mail_1']['#title']]));
+          }
+          else {
+            $form_state->setError($element);
+          }
+        }
+        // Verify that the value is not longer than #maxlength.
+        if (isset($element['mail_1']['#maxlength']) && Unicode::strlen($mail_1) > $element['mail_1']['#maxlength']) {
+          $t_args = [
+            '@name' => $element['mail_1']['#title'],
+            '%max' => $element['mail_1']['#maxlength'],
+            '%length' => Unicode::strlen($mail_1),
+          ];
+          $form_state->setError($element, t('@name cannot be longer than %max characters but is currently %length characters long.', $t_args));
+        }
       }
     }
 

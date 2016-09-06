@@ -20,7 +20,7 @@
 
         $element.tooltip({
           items: ':input',
-          content: $description.html(),
+          content: $description.html()
         });
       });
     }

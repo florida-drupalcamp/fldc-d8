@@ -41,6 +41,8 @@ function yamlform_drush_command() {
       'range-end' => 'The submission ID or end date at which to end exporting.',
       'state' => 'Submission state to be included: "completed", "draft" or "all" (default).',
       'sticky' => 'Flagged/starred submission status.',
+      'files' => 'Download files.',
+      'destination' => 'The full path and filename in which the CSV or archive should be stored. If omitted the CSV file or archive will be outputted to the commandline.',
     ],
     'aliases' => ['yfx'],
   ];
@@ -197,8 +199,15 @@ function drush_yamlform_export($yamlform_id = NULL) {
     }
   }
 
+  $yamlform = YamlForm::load($yamlform_id);
+  // @todd Determine if we should get source entity from options entity type
+  // and id.
+  $source_entity = NULL;
+
   /** @var \Drupal\yamlform\YamlFormSubmissionExporterInterface $exporter */
   $exporter = \Drupal::service('yamlform_submission.exporter');
+  $exporter->setYamlForm($yamlform);
+  $exporter->setSourceEntity($source_entity);
 
   // Get command options as export options.
   $export_options = drush_redispatch_get_options();
@@ -209,13 +218,19 @@ function drush_yamlform_export($yamlform_id = NULL) {
   }
   $export_options += $exporter->getDefaultExportOptions();
 
-  $yamlform = YamlForm::load($yamlform_id);
-  YamlFormResultsExportController::batchSet($yamlform, $export_options);
+  YamlFormResultsExportController::batchSet($yamlform, $source_entity, $export_options);
   drush_backend_batch_process();
 
-  $file_path = file_directory_temp() . '/' . $yamlform->id() . '.csv';
-  drush_print(file_get_contents($file_path));
+  $file_path = ($exporter->isArchive($export_options)) ? $exporter->getArchiveFilePath($export_options) : $exporter->getCsvFilePath($export_options);;
+  if (isset($export_options['destination'])) {
+    drush_print(dt('Created @destination', ['@destination' => $export_options['destination']]));
+    file_unmanaged_copy($file_path, $export_options['destination'], FILE_EXISTS_REPLACE);
+  }
+  else {
+    drush_print(file_get_contents($file_path));
+  }
   @unlink($file_path);
+
   return NULL;
 }
 

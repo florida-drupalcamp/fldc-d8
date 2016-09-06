@@ -25,6 +25,7 @@ class Captcha extends YamlFormElementBase {
     return [
       'captcha_type' => 'default',
       'captcha_admin_mode' => FALSE,
+      'flex' => 1,
     ];
   }
 

@@ -326,7 +326,7 @@ entity.yamlform_submission.notes_form:
     _entity_form: 'yamlform_submission.notes'
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
   requirements:
-    _entity_access: 'yamlform_submission.update'
+    _entity_access: 'yamlform_submission.update_any'
 
 entity.yamlform_submission.resend_form:
   path: '/admin/structure/yamlform/manage/{yamlform}/submission/{yamlform_submission}/resend'

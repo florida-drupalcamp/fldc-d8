@@ -19,6 +19,6 @@
 <b>{{ 'To:'|t }}</b> {{ settings.to_mail }}<br/>
 {% if settings.cc_mail %}<b>{{ 'Cc:'|t }}</b> {{ settings.cc_mail }}<br/>{% endif %}
 {% if settings.bcc_mail %}<b>{{ 'Bcc:'|t }}</b> {{ settings.bcc_mail }}<br/>{% endif %}
-<b>{{ 'From:'|t }}</b> {{ settings.from_mail }} &lt;{{ settings.from_name }}&gt;<br/>
+<b>{{ 'From:'|t }}</b> {{ settings.from_mail }} {% if settings.from_name %}&lt;{{ settings.from_name }}&gt;{% endif %}<br/>
 <b>{{ 'Subject:'|t }}</b> {{ settings.subject }}<br/>
 <b>{{ 'Settings:'|t }}</b> {{ settings.html ? 'HTML' : 'Plain text'|t }}{{ settings.html and settings.attachments ? '/' : '' }}{{ settings.attachments ? 'Attachments '|t : '' }}

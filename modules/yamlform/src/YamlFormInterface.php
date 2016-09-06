@@ -29,6 +29,14 @@ interface YamlFormInterface extends ConfigEntityInterface, EntityWithPluginColle
   public function hasManagedFile();
 
   /**
+   * Determine if the form is using a Flexbox layout.
+   *
+   * @return bool
+   *   TRUE if if the form is using a Flexbox layout.
+   */
+  public function hasFlexboxLayout();
+
+  /**
    * Returns the YAML form opened status indicator.
    *
    * @return bool
@@ -192,7 +200,7 @@ interface YamlFormInterface extends ConfigEntityInterface, EntityWithPluginColle
    *   (optional) An array of values to set, keyed by property name.
    * @param string $operation
    *   (optional) The operation identifying the form variation to be returned.
-   *   Defaults to 'default'. This is typically used in routing:
+   *   Defaults to 'default'. This is typically used in routing.
    *
    * @return array
    *   A render array representing a YAML form submission form.
@@ -203,7 +211,7 @@ interface YamlFormInterface extends ConfigEntityInterface, EntityWithPluginColle
    * Get elements (YAML) value.
    *
    * @return string
-   *   The elements' raw value.
+   *   The elements raw value.
    */
   public function getElementsRaw();
 

@@ -21,11 +21,6 @@ abstract class TextBase extends YamlFormElementBase {
       'maxlength' => '',
       'placeholder' => '',
       'pattern' => '',
-      'autocomplete_existing' => FALSE,
-      'autocomplete_options' => [],
-      'autocomplete_limit' => 10,
-      'autocomplete_match' => 3,
-      'autocomplete_match_operator' => 'CONTAINS',
     ];
   }
 
@@ -34,17 +29,6 @@ abstract class TextBase extends YamlFormElementBase {
    */
   public function prepare(array &$element, YamlFormSubmissionInterface $yamlform_submission) {
     parent::prepare($element, $yamlform_submission);
-
-    // Automcomplete.
-    if (!empty($element['#autocomplete_options']) || !empty($element['#autocomplete_existing'])) {
-      // Convert custom #autocomplete property to a FAPI autocomplete route
-      // that return YAML form options.
-      $element['#autocomplete_route_name'] = 'yamlform.element.autocomplete';
-      $element['#autocomplete_route_parameters'] = [
-        'yamlform' => $yamlform_submission->getYamlForm()->id(),
-        'key' => $element['#yamlform_key'],
-      ];
-    }
 
     // Counter.
     if (!empty($element['#counter_type']) && !empty($element['#counter_maximum'])) {
@@ -109,47 +93,6 @@ abstract class TextBase extends YamlFormElementBase {
           '999-99-9999' => 'SSN - 999-99-9999',
           "'alias': 'vin'" => 'VIN (Vehicle identification number)',
         ],
-      ],
-    ];
-
-    // Autocomplete.
-    $form['autocomplete'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Autocomplete settings'),
-      '#open' => FALSE,
-    ];
-    $form['autocomplete']['autocomplete_existing'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Included existing submission values.'),
-      '#description' => $this->t("If checked, all existing submission value will be visible to the form's users."),
-      '#return_value' => TRUE,
-    ];
-    $form['autocomplete']['autocomplete_options'] = [
-      '#type' => 'yamlform_element_options',
-      '#title' => $this->t('Values'),
-      '#states' => [
-        'visible' => [
-          ':input[name="properties[autocomplete_existing]"]' => ['checked' => FALSE],
-        ],
-      ],
-    ];
-    $form['autocomplete']['autocomplete_limit'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Limit'),
-      '#description' => $this->t("The maximum number of matches to be displayed."),
-    ];
-    $form['autocomplete']['autocomplete_match'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Minimum number of characters'),
-      '#description' => $this->t('The minimum number of characters a user must type before a search is performed.'),
-    ];
-    $form['autocomplete']['autocomplete_match_operator'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Matching operator'),
-      '#description' => $this->t('Select the method used to collect autocomplete suggestions.'),
-      '#options' => [
-        'STARTS_WITH' => $this->t('Starts with'),
-        'CONTAINS' => $this->t('Contains'),
       ],
     ];
 
@@ -222,20 +165,6 @@ abstract class TextBase extends YamlFormElementBase {
       '@type' => ($type == 'character') ? t('characters') : t('words'),
     ];
     $form_state->setError($element, t('%name must be less than @limit @type.', $t_args));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
-    // Open autocomplete details element if #autocomplete has been set.
-    $has_autocomplete_existing = !empty($form['autocomplete']['autocomplete_existing']['#default_value']);
-    $has_autocomplete_options = (!empty($form['autocomplete']['autocomplete_options']['#default_value']) && $form['autocomplete']['autocomplete_options']['#default_value'] != '{  }');
-    if ($has_autocomplete_existing || $has_autocomplete_options) {
-      $form['autocomplete']['#open'] = TRUE;
-    }
-    return $form;
   }
 
   /**

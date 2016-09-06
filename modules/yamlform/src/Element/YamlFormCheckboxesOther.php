@@ -27,6 +27,7 @@ class YamlFormCheckboxesOther extends FormElement {
       ],
       '#theme_wrappers' => ['form_element'],
       '#options' => [],
+      '#other__option_delimiter' => ', ',
     ];
   }
 
@@ -43,7 +44,7 @@ class YamlFormCheckboxesOther extends FormElement {
       $default_value = array_combine($element['#default_value'], $element['#default_value']);
       if ($other_options = array_diff_key($default_value, $element['#options'])) {
         $element['checkboxes']['#default_value'] = $element['#default_value'] + [self::OTHER_OPTION => self::OTHER_OPTION];
-        $element['other']['#default_value'] = reset($other_options);
+        $element['other']['#default_value'] = implode($element['#other__option_delimiter'], $other_options);
       }
       return $element;
     }
@@ -60,18 +61,18 @@ class YamlFormCheckboxesOther extends FormElement {
   public static function processYamlFormCheckboxesOther(&$element, FormStateInterface $form_state, &$complete_form) {
     // Build checkboxes element with selected properties.
     $properties = [
-      '#title',
       '#options',
+      '#options_display',
       '#default_value',
       '#attributes',
-      '#title_display',
-      '#description_display',
       '#required',
       '#ajax',
     ];
     $element['checkboxes']['#type'] = 'checkboxes';
     $element['checkboxes'] += array_intersect_key($element, array_combine($properties, $properties));
-    $element['checkboxes']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    if (!isset($element['checkboxes']['#options'][self::OTHER_OPTION])) {
+      $element['checkboxes']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    }
     $element['checkboxes']['#error_no_message'] = TRUE;
 
     // Build other textfield.
@@ -83,10 +84,11 @@ class YamlFormCheckboxesOther extends FormElement {
         $element['other'][str_replace('#other__', '#', $key)] = $value;
       }
     }
+    $element['other']['#wrapper_attributes']['class'][] = 'js-yamlform-checkboxes-other-input';
+    $element['other']['#wrapper_attributes']['class'][] = 'yamlform-checkboxes-other-input';
 
-    // Remove title and options since they are being moved the
-    // checkboxes element.
-    unset($element['#title'], $element['#options']);
+    // Remove options since they are being moved the checkboxes element.
+    unset($element['#options']);
 
     $element['#tree'] = TRUE;
     if (isset($element['#element_validate'])) {
@@ -98,7 +100,7 @@ class YamlFormCheckboxesOther extends FormElement {
     $element['#attached']['library'][] = 'yamlform/yamlform.element.other';
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     return $element;
   }
@@ -118,8 +120,18 @@ class YamlFormCheckboxesOther extends FormElement {
       }
     }
 
-    if ($element['#required'] && empty($value)) {
-      $form_state->setError($element, t('@name field is required.', ['@name' => $element['checkboxes']['#title']]));
+    $is_empty = empty($value);
+    $has_access = (!isset($element['#access']) || $element['#access'] === TRUE);
+    if ($element['#required'] && $is_empty && $has_access) {
+      if (isset($element['#required_error'])) {
+        $form_state->setError($element, $element['#required_error']);
+      }
+      elseif (isset($element['#title'])) {
+        $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      }
+      else {
+        $form_state->setError($element);
+      }
     }
 
     $form_state->setValueForElement($element['checkboxes'], NULL);

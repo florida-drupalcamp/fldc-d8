@@ -3,6 +3,7 @@
 namespace Drupal\yamlform\Tests;
 
 use Drupal\simpletest\WebTestBase;
+use Drupal\yamlform\Entity\YamlForm;
 
 /**
  * Tests for YAML form (render) element extras.
@@ -45,7 +46,7 @@ class YamlFormElementExtrasTest extends WebTestBase {
 
     // Check basic creditcard_number.
     $this->assertRaw('<label for="edit-creditcard-number-basic">Credit card number basic</label>');
-    $this->assertRaw('<input data-drupal-selector="edit-creditcard-number-basic" type="text" id="edit-creditcard-number-basic" name="creditcard_number_basic" value="" size="16" maxlength="16" class="form-textfield form-creditcard_number" />');
+    $this->assertRaw('<input data-drupal-selector="edit-creditcard-number-basic" type="text" id="edit-creditcard-number-basic" name="creditcard_number_basic" value="" size="16" maxlength="16" class="form-textfield form-creditcard-number" />');
 
     /**************************************************************************/
     // email_multiple
@@ -110,13 +111,13 @@ class YamlFormElementExtrasTest extends WebTestBase {
     /**************************************************************************/
 
     // Check basic checkboxes.
-    $this->assertRaw('<span class="fieldset-legend">Checkboxes other basic</span>');
+    $this->assertRaw('<label for="edit-checkboxes-other-basic">Checkboxes other basic</label>');
     $this->assertRaw('<input data-drupal-selector="edit-checkboxes-other-basic-checkboxes-other-" type="checkbox" id="edit-checkboxes-other-basic-checkboxes-other-" name="checkboxes_other_basic[checkboxes][_other_]" value="_other_" checked="checked" class="form-checkbox" />');
     $this->assertRaw('<label for="edit-checkboxes-other-basic-checkboxes-other-" class="option">Other...</label>');
     $this->assertRaw('<input data-drupal-selector="edit-checkboxes-other-basic-other" type="text" id="edit-checkboxes-other-basic-other" name="checkboxes_other_basic[other]" value="Four" size="60" maxlength="128" placeholder="Enter other..." class="form-text" />');
 
     // Check advanced checkboxes.
-    $this->assertRaw('<span class="fieldset-legend js-form-required form-required">Checkboxes other advanced</span>');
+    $this->assertRaw('<label for="edit-checkboxes-other-advanced" class="js-form-required form-required">Checkboxes other advanced</label>');
     $this->assertRaw('<input data-drupal-selector="edit-checkboxes-other-advanced-other" aria-describedby="edit-checkboxes-other-advanced-other--description" type="text" id="edit-checkboxes-other-advanced-other" name="checkboxes_other_advanced[other]" value="Four" size="60" maxlength="128" placeholder="What is this other option" class="form-text" />');
     $this->assertRaw('<div id="edit-checkboxes-other-advanced-other--description" class="description">');
     $this->assertRaw('Other checkbox description');
@@ -126,13 +127,13 @@ class YamlFormElementExtrasTest extends WebTestBase {
     /**************************************************************************/
 
     // Check basic radios_other.
-    $this->assertRaw('<span class="fieldset-legend">Radios other basic</span>');
+    $this->assertRaw('<label for="edit-radios-other-basic">Radios other basic</label>');
     $this->assertRaw('<input data-drupal-selector="edit-radios-other-basic-radios-other-" type="radio" id="edit-radios-other-basic-radios-other-" name="radios_other_basic[radios]" value="_other_" checked="checked" class="form-radio" />');
     $this->assertRaw('<label for="edit-radios-other-basic-radios-other-" class="option">Other...</label>');
     $this->assertRaw('<input data-drupal-selector="edit-radios-other-basic-other" type="text" id="edit-radios-other-basic-other" name="radios_other_basic[other]" value="Four" size="60" maxlength="128" placeholder="Enter other..." class="form-text" />');
 
     // Check advanced radios_other w/ custom label.
-    $this->assertRaw('<span class="fieldset-legend js-form-required form-required">Radios other advanced</span>');
+    $this->assertRaw('<label for="edit-radios-other-advanced" class="js-form-required form-required">Radios other advanced</label>');
     $this->assertRaw('<input data-drupal-selector="edit-radios-other-advanced-radios-other-" type="radio" id="edit-radios-other-advanced-radios-other-" name="radios_other_advanced[radios]" value="_other_" checked="checked" class="form-radio" />');
     $this->assertRaw('<input data-drupal-selector="edit-radios-other-advanced-other" aria-describedby="edit-radios-other-advanced-other--description" type="text" id="edit-radios-other-advanced-other" name="radios_other_advanced[other]" value="Four" size="60" maxlength="128" placeholder="What is this other option" class="form-text" />');
     $this->assertRaw('<div id="edit-radios-other-advanced-other--description" class="description">');
@@ -242,7 +243,7 @@ class YamlFormElementExtrasTest extends WebTestBase {
 
     $this->assertRaw('<fieldset data-drupal-selector="edit-creditcard" id="edit-creditcard--wrapper" class="fieldgroup form-composite js-form-item form-item js-form-wrapper form-wrapper">');
     $this->assertRaw('<span class="fieldset-legend">Credit Card</span>');
-    $this->assertRaw('<div data-drupal-selector="edit-creditcard" id="edit-creditcard--wrapper" class="fieldgroup form-composite js-form-wrapper form-wrapper"><div class="messages messages--warning">The credit card element is experimental and insecure because it stores information as plain text.</div><div class="js-form-item form-item js-form-type-textfield form-type-textfield js-form-item-creditcard-name form-item-creditcard-name">');
+    $this->assertRaw('<div data-drupal-selector="edit-creditcard" id="edit-creditcard--wrapper" class="fieldgroup form-composite js-form-wrapper form-wrapper"><div class="messages messages--warning">The credit card element is experimental and insecure because it stores submitted information as plain text.</div><div class="js-form-item form-item js-form-type-textfield form-type-textfield js-form-item-creditcard-name form-item-creditcard-name">');
     $this->assertRaw('<label for="edit-creditcard-name">Name on Card</label>');
     $this->assertRaw('<input data-drupal-selector="edit-creditcard-name" type="text" id="edit-creditcard-name" name="creditcard[name]" value="John Smith" size="60" maxlength="128" class="form-text" />');
     $this->assertRaw('<select data-drupal-selector="edit-creditcard-expiration-month" id="edit-creditcard-expiration-month" name="creditcard[expiration_month]" class="form-select">');
@@ -264,6 +265,8 @@ class YamlFormElementExtrasTest extends WebTestBase {
    * Tests value processing for custom elements.
    */
   public function testProcessingElements() {
+    /** @var \Drupal\yamlform\YamlFormInterface $yamlform */
+    $yamlform = YamlForm::load('test_element_extras');
 
     /**************************************************************************/
     // counter
@@ -423,6 +426,19 @@ class YamlFormElementExtrasTest extends WebTestBase {
     $this->drupalPostForm('yamlform/test_element_extras', $edit, t('Submit'));
     $this->assertRaw('select_other_advanced: One');
     $this->assertNoRaw('select_other_advanced: Five');
+
+    // Check select other validation is required when default value is NULL.
+    $elements = $yamlform->getElementsDecoded();
+    $elements['select_other']['select_other_advanced']['#default_value'] = NULL;
+    $yamlform->setElements($elements)->save();
+    $this->drupalPostForm('yamlform/test_element_extras', [], t('Submit'));
+    $this->assertRaw('Select other advanced field is required.');
+
+    // Check select other validation is skipped when #access is set to FALSE.
+    $elements['select_other']['select_other_advanced']['#access'] = FALSE;
+    $yamlform->setElements($elements)->save();
+    $this->drupalPostForm('yamlform/test_element_extras', [], t('Submit'));
+    $this->assertNoRaw('Select other advanced field is required.');
 
     /**************************************************************************/
     // radios_other

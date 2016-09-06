@@ -5,6 +5,7 @@ namespace Drupal\yamlform\Plugin\YamlFormElement;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\OptGroup;
 use Drupal\yamlform\Utility\YamlFormArrayHelper;
+use Drupal\yamlform\Utility\YamlFormElementHelper;
 use Drupal\yamlform\Utility\YamlFormOptionsHelper;
 use Drupal\yamlform\YamlFormElementBase;
 use Drupal\yamlform\YamlFormSubmissionInterface;
@@ -28,9 +29,38 @@ abstract class OptionsBase extends YamlFormElementBase {
    * {@inheritdoc}
    */
   public function prepare(array &$element, YamlFormSubmissionInterface $yamlform_submission) {
+    parent::prepare($element, $yamlform_submission);
+
     // Randomize options.
     if (isset($element['#options']) && !empty($element['#options_randomize'])) {
       shuffle($element['#options']);
+    }
+
+    $is_wrapper_fieldset = in_array($element['#type'], ['checkboxes', 'radios']);
+    if ($is_wrapper_fieldset) {
+      // Issue #2396145: Option #description_display for form element fieldset is
+      // not changing anything.
+      // @see core/modules/system/templates/fieldset.html.twig
+      $is_description_display = (isset($element['#description_display'])) ? TRUE : FALSE;
+      $has_description = (!empty($element['#description'])) ? TRUE : FALSE;
+      if ($is_description_display && $has_description) {
+        switch ($element['#description_display']) {
+          case 'before':
+            $element += ['#field_prefix' => ''];
+            $element['#field_prefix'] = '<div class="description">' . $element['#description'] . '</div>' . $element['#field_prefix'];
+            unset($element['#description']);
+            break;
+
+          case 'invisible':
+            $element += ['#field_suffix' => ''];
+            $element['#field_suffix'] .= '<div class="description visually-hidden">' . $element['#description'] . '</div>';
+            unset($element['#description']);
+            break;
+        }
+      }
+
+      // Fix flexbox wrapper.
+      YamlFormElementHelper::fixWrapper($element, ['states' => FALSE]);
     }
   }
 
@@ -82,14 +112,14 @@ abstract class OptionsBase extends YamlFormElementBase {
       return '';
     }
 
+    $format = $this->getFormat($element);
     $flattened_options = OptGroup::flattenOptions($element['#options']);
 
     // If not multiple options array return the simple value.
     if (!is_array($value)) {
-      return YamlFormOptionsHelper::getOptionText($value, $flattened_options);
+      return ($format == 'raw') ? $value : YamlFormOptionsHelper::getOptionText($value, $flattened_options);
     }
 
-    $format = $this->getFormat($element);
     $options_text = YamlFormOptionsHelper::getOptionsText($value, $flattened_options);
     switch ($format) {
       case 'ol';
@@ -111,13 +141,16 @@ abstract class OptionsBase extends YamlFormElementBase {
         return YamlFormArrayHelper::toString($options_text, t('and'));
 
       case 'comma';
-        return implode(', ', YamlFormOptionsHelper::getOptionsText($value, $flattened_options));
+        return implode(', ', $options_text);
 
       case 'semicolon';
-        return implode('; ', YamlFormOptionsHelper::getOptionsText($value, $flattened_options));
+        return implode('; ', $options_text);
+
+      case 'raw';
+        return implode(', ', $value);
 
       default:
-        return implode($format, YamlFormOptionsHelper::getOptionsText($value, $flattened_options));
+        return implode($format, $options_text);
     }
   }
 

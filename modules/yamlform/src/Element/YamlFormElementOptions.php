@@ -121,7 +121,7 @@ class YamlFormElementOptions extends FormElement {
     $element['#element_validate'] = [[get_called_class(), 'validateYamlFormElementOptions']];
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     return $element;
 
@@ -144,8 +144,17 @@ class YamlFormElementOptions extends FormElement {
       }
     }
 
-    if ($element['#required'] && empty($value)) {
-      $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+    $has_access = (!isset($element['#access']) || $element['#access'] === TRUE);
+    if ($element['#required'] && empty($value) && $has_access) {
+      if (isset($element['#required_error'])) {
+        $form_state->setError($element, $element['#required_error']);
+      }
+      elseif (isset($element['#title'])) {
+        $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      }
+      else {
+        $form_state->setError($element);
+      }
     }
 
     $form_state->setValueForElement($element['options'], NULL);

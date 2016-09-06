@@ -8,10 +8,10 @@ namespace Drupal\yamlform\Utility;
 class YamlFormReflectionHelper {
 
   /**
-   * Get this element's class hierachy.
+   * Get this element's class hierarchy.
    *
    * @return array
-   *   An array containing this elements class heirarchy.
+   *   An array containing this elements class hierarchy.
    */
   static public function getParentClasses($object, $base_class_name = '') {
     $class = get_class($object);

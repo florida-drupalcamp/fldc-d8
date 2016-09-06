@@ -542,6 +542,27 @@ class YamlFormSubmission extends ContentEntityBase implements YamlFormSubmission
       self::$yamlform = NULL;
     }
 
+    // Get request's source entity parameter.
+    /** @var \Drupal\yamlform\YamlFormRequestInterface $yamlform_request */
+    $yamlform_request = \Drupal::service('yamlform.request');
+    $source_entity = $yamlform_request->getCurrentSourceEntity('yamlform');
+    $values += [
+      'entity_type' => ($source_entity) ? $source_entity->getEntityTypeId() : NULL,
+      'entity_id' => ($source_entity) ? $source_entity->id() : NULL,
+    ];
+
+    // Get default date from source entity 'yamlform' field.
+    if ($values['entity_type'] && $values['entity_id']) {
+      $source_entity = \Drupal::entityTypeManager()->getStorage($values['entity_type'])->load($values['entity_id']);
+      if ($source_entity && method_exists($source_entity, 'hasField') && $source_entity->hasField('yamlform')) {
+        foreach ($source_entity->yamlform as $item) {
+          if ($item->target_id == $yamlform->id()) {
+            $values['data'] = $item->default_data;
+          }
+        }
+      }
+    }
+
     // Set default uri and remote_addr.
     $current_request = \Drupal::requestStack()->getCurrentRequest();
     $values += [
@@ -560,16 +581,6 @@ class YamlFormSubmission extends ContentEntityBase implements YamlFormSubmission
 
     // Set is draft.
     $values['in_draft'] = FALSE;
-
-    // Get request's entity parameter.
-    /** @var \Drupal\yamlform\YamlFormRequestInterface $yamlform_request */
-    $yamlform_request = \Drupal::service('yamlform.request');
-    $source_entity = $yamlform_request->getCurrentSourceEntity('yamlform');
-
-    $values += [
-      'entity_type' => ($source_entity) ? $source_entity->getEntityTypeId() : NULL,
-      'entity_id' => ($source_entity) ? $source_entity->id() : NULL,
-    ];
 
     $yamlform->invokeHandlers(__FUNCTION__, $values);
     $yamlform->invokeElements(__FUNCTION__, $values);

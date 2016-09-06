@@ -59,18 +59,18 @@ class YamlFormRadiosOther extends FormElement {
   public static function processYamlFormRadiosOther(&$element, FormStateInterface $form_state, &$complete_form) {
     // Build radios element with selected properties.
     $properties = [
-      '#title',
       '#options',
+      '#options_display',
       '#default_value',
       '#attributes',
-      '#title_display',
-      '#description_display',
       '#required',
       '#ajax',
     ];
     $element['radios']['#type'] = 'radios';
     $element['radios'] += array_intersect_key($element, array_combine($properties, $properties));
-    $element['radios']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    if (!isset($element['radios']['#options'][self::OTHER_OPTION])) {
+      $element['radios']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    }
     $element['radios']['#error_no_message'] = TRUE;
 
     // Build other textfield.
@@ -82,16 +82,18 @@ class YamlFormRadiosOther extends FormElement {
         $element['other'][str_replace('#other__', '#', $key)] = $value;
       }
     }
+    $element['other']['#wrapper_attributes']['class'][] = 'js-yamlform-radios-other-input';
+    $element['other']['#wrapper_attributes']['class'][] = 'yamlform-radios-other-input';
 
-    // Remove title and options since they are being moved the radios element.
-    unset($element['#title'], $element['#options']);
+    // Remove options since they are being moved the radios element.
+    unset($element['#options']);
 
     $element['#tree'] = TRUE;
     $element['#element_validate'] = [[get_called_class(), 'validateYamlFormRadiosOther']];
     $element['#attached']['library'][] = 'yamlform/yamlform.element.other';
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     return $element;
 
@@ -108,8 +110,18 @@ class YamlFormRadiosOther extends FormElement {
       $value = $other_value;
     }
 
-    if ($element['#required'] && ($value === '' || $value === NULL)) {
-      $form_state->setError($element, t('@name field is required.', ['@name' => $element['radios']['#title']]));
+    $is_empty = ($value === '' || $value === NULL);
+    $has_access = (!isset($element['#access']) || $element['#access'] === TRUE);
+    if ($element['#required'] && $is_empty && $has_access) {
+      if (isset($element['#required_error'])) {
+        $form_state->setError($element, $element['#required_error']);
+      }
+      elseif (isset($element['#title'])) {
+        $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      }
+      else {
+        $form_state->setError($element);
+      }
     }
 
     $form_state->setValueForElement($element['radios'], NULL);

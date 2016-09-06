@@ -13,6 +13,38 @@ use Drupal\Core\Template\Attribute;
 class YamlFormElementHelper {
 
   /**
+   * Ignored element properties.
+   *
+   * @var array
+   */
+  public static $ignoredProperties = [
+    // Properties that will allow code injection.
+    '#allowed_tags' => '#allowed_tags',
+      // Properties that will break YAML form data handling.
+    '#tree' => '#tree',
+    '#array_parents' => '#array_parents',
+    '#parents' => '#parents',
+    // Properties that will cause unpredictable rendering.
+    '#weight' => '#weight',
+    // Callbacks are blocked to prevent unwanted code executions.
+    '#after_build' => '#after_build',
+    '#element_validate' => '#element_validate',
+    '#post_render' => '#post_render',
+    '#pre_render' => '#pre_render',
+    '#process' => '#process',
+    '#submit' => '#submit',
+    '#validate' => '#validate',
+    '#value_callback' => '#value_callback',
+  ];
+
+  /**
+   * Regular expression used to determine if sub-element property should be ignored.
+   *
+   * @var string
+   */
+  protected static $ignoredPropertiesRegExp;
+
+  /**
    * Determine if a form element's title is displayed.
    *
    * @param array $element
@@ -135,17 +167,110 @@ class YamlFormElementHelper {
   }
 
   /**
-   * Fix form element #states attribute handling.
+   * Fix form element #states and #flex wrapper handling.
    *
    * @param array $element
    *   A form element that is missing the 'data-drupal-states' attribute.
+   * @param array $options
+   *   Options to be fixed, states and/or flexbox.
    */
-  public static function fixStates(array &$element) {
-    if (isset($element['#states'])) {
-      $attributes = ['class' => ['js-form-wrapper'], 'data-drupal-states' => Json::encode($element['#states'])];
+  public static function fixWrapper(array &$element, array $options = []) {
+    $options += [
+      'states' => TRUE,
+      'flexbox' => TRUE,
+    ];
+
+    $attributes = [];
+    if ($options['states'] && isset($element['#states'])) {
+      $attributes['class'][] = 'js-form-wrapper';
+      $attributes['data-drupal-states'] = Json::encode($element['#states']);
+    }
+
+    if ($options['states'] && !empty($element['#yamlform_parent_flexbox'])) {
+      $flex = (isset($element['#flex'])) ? $element['#flex'] : 1;
+      $attributes['class'][] = 'js-yamlform-flex';
+      $attributes['class'][] = 'yamlform-flex';
+      $attributes['class'][] = 'js-yamlform-flex--' . $flex;
+      $attributes['class'][] = 'yamlform-flex--' . $flex;
+    }
+
+    if ($attributes) {
       $element += ['#prefix' => '', '#suffix' => ''];
       $element['#prefix'] = '<div ' . new Attribute($attributes) . '>' . $element['#prefix'];
       $element['#suffix'] = $element['#suffix'] . '</div>';
+    }
+  }
+
+  /**
+   * Get ignored properties from a form element.
+   *
+   * @param array $element
+   *   A form element.
+   *
+   * @return array
+   *   An array of ignored properties.
+   */
+  public static function getIgnoredProperties(array $element) {
+    $ignored_properties = [];
+    foreach ($element as $key => $value) {
+      if (Element::property($key)) {
+        if (self::isIgnoredProperty($key)) {
+          $ignored_properties[$key] = $key;
+        }
+      }
+      elseif (is_array($value)) {
+        $ignored_properties += self::getIgnoredProperties($value, $ignored_properties);
+      }
+    }
+    return $ignored_properties;
+  }
+
+  /**
+   * Remove ignored properties from an element.
+   *
+   * @param array $element
+   *   A form element.
+   *
+   * @return array
+   *   A form element with ignored properties removed.
+   */
+  public static function removeIgnoredProperties(array $element) {
+    foreach ($element as $key => $value) {
+      if (Element::property($key) && self::isIgnoredProperty($key)) {
+        unset($element[$key]);
+      }
+    }
+    return $element;
+  }
+
+  /**
+   * Determine if an element's property should be ignored.
+   *
+   * Subelement properties are delimited using __.
+   *
+   * @param string $property
+   *   A property name.
+   *
+   * @return bool
+   *   TRUE is the property should be ignored.
+   *
+   * @see \Drupal\yamlform\Element\YamlFormSelectOther
+   * @see \Drupal\yamlform\Element\YamlFormCompositeBase::processYamlFormComposite
+   */
+  protected static function isIgnoredProperty($property) {
+    // Build cached ignored properties regular expression.
+    if (!isset(self::$ignoredPropertiesRegExp)) {
+      self::$ignoredPropertiesRegExp = '/__(' . implode('|', array_keys(self::removePrefix(self::$ignoredProperties))) . ')$/';
+    }
+
+    if (isset(self::$ignoredProperties[$property])) {
+      return TRUE;
+    }
+    elseif (strpos($property, '__') !== FALSE && preg_match(self::$ignoredPropertiesRegExp, $property)) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
     }
   }
 

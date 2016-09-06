@@ -3,6 +3,7 @@
 namespace Drupal\yamlform\Element;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\OptGroup;
 use Drupal\Core\Render\Element\FormElement;
 use Drupal\yamlform\Utility\YamlFormElementHelper;
 use Drupal\yamlform\Utility\YamlFormOptionsHelper;
@@ -33,6 +34,7 @@ class YamlFormSelectOther extends FormElement {
       ],
       '#theme_wrappers' => ['form_element'],
       '#options' => [],
+      '#other__option_delimiter' => ', ',
     ];
   }
 
@@ -48,15 +50,13 @@ class YamlFormSelectOther extends FormElement {
 
       if (isset($element['#multiple']) && $element['#multiple']) {
         if (is_array($default_value)) {
-          foreach ($default_value as $option_value) {
-            if (!YamlFormOptionsHelper::hasOption($option_value, $element['#options'])) {
-              $element['select']['#default_value'] = $default_value + [self::OTHER_OPTION => self::OTHER_OPTION];
-              $element['other']['#default_value'] = $option_value;
-              return $element;
-            }
+          $flattened_options = OptGroup::flattenOptions($element['#options']);
+          if ($other_options = array_diff_key(array_combine($default_value, $default_value), $flattened_options)) {
+            $element['select']['#default_value'] = $default_value + [self::OTHER_OPTION => self::OTHER_OPTION];
+            $element['other']['#default_value'] = implode($element['#other__option_delimiter'], $other_options);
           }
+          return $element;
         }
-
       }
       elseif (!YamlFormOptionsHelper::hasOption($default_value, $element['#options'])) {
         $element['select']['#default_value'] = self::OTHER_OPTION;
@@ -93,7 +93,9 @@ class YamlFormSelectOther extends FormElement {
     ];
     $element['select']['#type'] = 'select';
     $element['select'] += array_intersect_key($element, array_combine($properties, $properties));
-    $element['select']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    if (!isset($element['select']['#options'][self::OTHER_OPTION])) {
+      $element['select']['#options'][self::OTHER_OPTION] = (!empty($element['#other__option_label'])) ? $element['#other__option_label'] : t('Other...');
+    }
     $element['select']['#error_no_message'] = TRUE;
 
     // Build other textfield.
@@ -105,6 +107,8 @@ class YamlFormSelectOther extends FormElement {
         $element['other'][str_replace('#other__', '#', $key)] = $value;
       }
     }
+    $element['other']['#wrapper_attributes']['class'][] = 'js-yamlform-select-other-input';
+    $element['other']['#wrapper_attributes']['class'][] = 'yamlform-select-other-input';
 
     // Remove title and options since they are being moved the select element.
     unset($element['#title'], $element['#options']);
@@ -119,7 +123,7 @@ class YamlFormSelectOther extends FormElement {
     $element['#attached']['library'][] = 'yamlform/yamlform.element.other';
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     return $element;
 
@@ -150,14 +154,22 @@ class YamlFormSelectOther extends FormElement {
       $is_empty = ($value === '' || $value === NULL) ? TRUE : FALSE;
     }
 
-    if ($element['#required'] && $is_empty) {
-      $form_state->setError($element, t('@name field is required.', ['@name' => $element['select']['#title']]));
+    $has_access = (!isset($element['#access']) || $element['#access'] === TRUE);
+    if ($element['#required'] && $is_empty && $has_access) {
+      if (isset($element['#required_error'])) {
+        $form_state->setError($element, $element['#required_error']);
+      }
+      elseif (isset($element['#title'])) {
+        $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      }
+      else {
+        $form_state->setError($element);
+      }
     }
 
     $form_state->setValueForElement($element['select'], NULL);
     $form_state->setValueForElement($element['other'], NULL);
     $form_state->setValueForElement($element, $value);
-
     return $element;
   }
 

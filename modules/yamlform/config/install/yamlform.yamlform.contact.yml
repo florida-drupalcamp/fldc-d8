@@ -37,6 +37,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true
@@ -101,7 +102,7 @@ handlers:
     status: true
     weight: 1
     settings:
-      to_mail: '[yamlform-submission:values:email:value]'
+      to_mail: '[yamlform-submission:values:email:raw]'
       cc_mail: ''
       bcc_mail: ''
       from_mail: default
@@ -122,7 +123,7 @@ handlers:
       to_mail: default
       cc_mail: ''
       bcc_mail: ''
-      from_mail: '[yamlform-submission:values:email:value]'
+      from_mail: '[yamlform-submission:values:email:raw]'
       from_name: '[yamlform-submission:values:name:value]'
       subject: '[yamlform-submission:values:subject:value]'
       body: '[yamlform-submission:values:message:value]'

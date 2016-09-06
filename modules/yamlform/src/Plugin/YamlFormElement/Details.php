@@ -18,13 +18,8 @@ class Details extends ContainerBase {
    * {@inheritdoc}
    */
   public function getDefaultProperties() {
-    return [
-      'title' => '',
-      'title_display' => '',
-      'description' => '',
-      'required' => FALSE,
+    return parent::getDefaultProperties() + [
       'open' => FALSE,
-      'private' => FALSE,
     ];
   }
 

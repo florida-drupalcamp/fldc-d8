@@ -78,7 +78,6 @@ class YamlFormResultsCustomForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $available_columns = $this->submissionStorage->getColumns($this->yamlform, $this->sourceEntity, NULL, TRUE);
     $custom_columns = $this->submissionStorage->getCustomColumns($this->yamlform, $this->sourceEntity, NULL, TRUE);
-
     // Change sid's # to an actual label.
     $available_columns['sid']['title'] = $this->t('Submission ID');
     if (isset($custom_columns['sid'])) {
@@ -119,6 +118,7 @@ class YamlFormResultsCustomForm extends FormBase {
           'width' => '40px',
         ],
         'title' => $this->t('Title'),
+        'key' => $this->t('Key'),
         'weight' => $this->t('Weight'),
       ],
       '#tabledrag' => [
@@ -172,14 +172,48 @@ class YamlFormResultsCustomForm extends FormBase {
 
     // Default configuration.
     if (empty($this->sourceEntity)) {
-      $form['default'] = [
+      $form['config'] = [
+        '#type' => 'details',
+        '#title' => $this->t('Configuration settings'),
+      ];
+      $form['config']['default'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Use as default configuration'),
-        '#description' => $this->t('If checked, the above settings will be used as the default configuration for YAML Form nodes.'),
+        '#description' => $this->t('If checked, the above settings will be used as the default configuration for all associated YAML Form nodes.'),
         '#return_value' => TRUE,
         '#default_value' => $this->yamlform->getState($this->getStateKey('default'), TRUE),
       ];
     }
+
+    // Format settings.
+    $format = $this->yamlform->getState($this->getStateKey('format'), [
+      'header_format' => 'label',
+      'element_format' => 'value',
+    ]);
+    $form['format'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Format settings'),
+      '#tree' => TRUE,
+    ];
+    $form['format']['header_format'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Column header format'),
+      '#description' => $this->t('Choose whether to show the element label or element key in each column header.'),
+      '#options' => [
+        'label' => $this->t('Element titles (label)'),
+        'key' => $this->t('Element keys (key)'),
+      ],
+      '#default_value' => $format['header_format'],
+    ];
+    $form['format']['element_format'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Element format'),
+      '#options' => [
+        'value' => $this->t('Labels/values, the human-readable value (value)'),
+        'raw' => $this->t('Raw values, the raw value stored in the database (raw)'),
+      ],
+      '#default_value' => $format['element_format'],
+    ];
 
     // Build actions.
     $form['actions']['#type'] = 'actions';
@@ -225,6 +259,9 @@ class YamlFormResultsCustomForm extends FormBase {
       ],
       'title' => [
         '#markup' => $column['title'],
+      ],
+      'key' => [
+        '#markup' => (isset($column['key'])) ? $column['key'] : $column['name'],
       ],
       'weight' => [
         '#type' => 'weight',
@@ -273,6 +310,7 @@ class YamlFormResultsCustomForm extends FormBase {
     $this->yamlform->setState($this->getStateKey('sort'), $form_state->getValue('sort'));
     $this->yamlform->setState($this->getStateKey('direction'), $form_state->getValue('direction'));
     $this->yamlform->setState($this->getStateKey('limit'), (int) $form_state->getValue('limit'));
+    $this->yamlform->setState($this->getStateKey('format'), $form_state->getValue('format'));
 
     // Set default.
     if (empty($this->sourceEntity)) {
@@ -280,7 +318,7 @@ class YamlFormResultsCustomForm extends FormBase {
     }
 
     // Display message.
-    drupal_set_message($this->t('The customized columns and results per page limit have been saved.'));
+    drupal_set_message($this->t('The customized table has been saved.'));
 
     // Set redirect.
     $route_name = $this->yamlFormRequest->getRouteName($this->yamlform, $this->sourceEntity, 'yamlform.results_table');
@@ -302,7 +340,8 @@ class YamlFormResultsCustomForm extends FormBase {
     $this->yamlform->deleteState($this->getStateKey('direction'));
     $this->yamlform->deleteState($this->getStateKey('limit'));
     $this->yamlform->deleteState($this->getStateKey('default'));
-    drupal_set_message($this->t('The customized columns, sort by, and results per page limit have been reset.'));
+    $this->yamlform->deleteState($this->getStateKey('format'));
+    drupal_set_message($this->t('The customized table has been reset.'));
   }
 
   /**

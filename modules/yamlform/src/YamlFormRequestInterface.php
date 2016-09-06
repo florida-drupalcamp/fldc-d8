@@ -66,7 +66,7 @@ interface YamlFormRequestInterface {
   public function getRouteName(EntityInterface $yamlform_entity, EntityInterface $source_entity = NULL, $route_name);
 
   /**
-   * Get the route paramters for a YAML form/submission and source entity.
+   * Get the route parameters for a YAML form/submission and source entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $yamlform_entity
    *   A YAML form or YAML form submission.

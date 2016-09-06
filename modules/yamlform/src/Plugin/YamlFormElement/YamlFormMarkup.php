@@ -40,6 +40,7 @@ class YamlFormMarkup extends YamlFormElementBase {
       'markup' => '',
       'display_on' => 'form',
       'private' => FALSE,
+      'flex' => 1,
     ];
   }
 

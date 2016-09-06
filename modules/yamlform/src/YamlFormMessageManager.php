@@ -11,7 +11,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Psr\Log\LoggerInterface;
 
 /**
- * Defines the YAML form message (and loggin) manager.
+ * Defines the YAML form message (and login) manager.
  */
 class YamlFormMessageManager implements YamlFormMessageManagerInterface {
 

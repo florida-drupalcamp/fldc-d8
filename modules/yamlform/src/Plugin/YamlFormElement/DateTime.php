@@ -5,6 +5,7 @@ namespace Drupal\yamlform\Plugin\YamlFormElement;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\yamlform\Utility\YamlFormElementHelper;
 use Drupal\yamlform\YamlFormSubmissionInterface;
 
 /**

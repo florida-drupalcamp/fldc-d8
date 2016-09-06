@@ -34,8 +34,8 @@
             { name: 'links', items: [ 'Link', 'Unlink'] },
             { name: 'tools', items: [ 'Source', '-', 'Maximize' ] }
           ]
-        }).on('blur', function( evt ) {
-          // Save data onblur since AJAX dialogs don't execute form.onsubmit.
+        }).on('change', function(evt) {
+          // Save data onchange since AJAX dialogs don't execute form.onsubmit.
           $textarea.val(evt.editor.getData().trim());
         });
       })

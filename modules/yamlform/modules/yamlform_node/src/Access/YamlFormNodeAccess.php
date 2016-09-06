@@ -13,10 +13,12 @@ use Drupal\yamlform\YamlFormSubmissionInterface;
 class YamlFormNodeAccess {
 
   /**
-   * Check whether the user can access a node's YAML form results.
+   * Check whether the user can access a node's YAML form.
    *
    * @param string $operation
    *   Operation being performed.
+   * @param string $entity_access
+   *   Entity access rule that needs to be checked.
    * @param \Drupal\node\NodeInterface $node
    *   A node.
    * @param \Drupal\Core\Session\AccountInterface $account
@@ -25,16 +27,8 @@ class YamlFormNodeAccess {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  static public function checkYamlFormAccess($operation = '', NodeInterface $node, AccountInterface $account) {
-    if (!$node->hasField('yamlform') || !$node->yamlform->entity) {
-      return AccessResult::forbidden();
-    }
-    elseif (strpos($operation, 'yamlform.') === 0) {
-      return $node->yamlform->entity->access($operation, $account, TRUE);
-    }
-    else {
-      return $node->access($operation, $account, TRUE);
-    }
+  static public function checkYamlFormAccess($operation, $entity_access, NodeInterface $node, AccountInterface $account) {
+    return self::checkAccess($operation, $entity_access, $node, NULL, $account);
   }
 
   /**
@@ -42,6 +36,8 @@ class YamlFormNodeAccess {
    *
    * @param string $operation
    *   Operation being performed.
+   * @param string $entity_access
+   *   Entity access rule that needs to be checked.
    * @param \Drupal\node\NodeInterface $node
    *   A node.
    * @param \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission
@@ -52,16 +48,58 @@ class YamlFormNodeAccess {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  static public function checkYamlFormSubmissionAccess($operation = '', NodeInterface $node, YamlFormSubmissionInterface $yamlform_submission, AccountInterface $account) {
+  static public function checkYamlFormSubmissionAccess($operation, $entity_access, NodeInterface $node, YamlFormSubmissionInterface $yamlform_submission, AccountInterface $account) {
+    return self::checkAccess($operation, $entity_access, $node, $yamlform_submission, $account);
+  }
+
+  /**
+   * Check whether the user can access a node's YAML form and/or submission.
+   *
+   * @param string $operation
+   *   Operation being performed.
+   * @param string $entity_access
+   *   Entity access rule that needs to be checked.
+   * @param \Drupal\node\NodeInterface $node
+   *   A node.
+   * @param \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission
+   *   A YAML form submission.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Run access checks for this account.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
+   */
+  static protected function checkAccess($operation, $entity_access, NodeInterface $node, YamlFormSubmissionInterface $yamlform_submission = NULL, AccountInterface $account = NULL) {
+    // Check that the node has a valid YAML form reference.
     if (!$node->hasField('yamlform') || !$node->yamlform->entity) {
       return AccessResult::forbidden();
     }
-    elseif ($yamlform_submission->getSourceEntity() != $node) {
+
+    // Check that the YAML form submission was created via the YAML form node.
+    if ($yamlform_submission && $yamlform_submission->getSourceEntity() != $node) {
       return AccessResult::forbidden();
     }
-    else {
-      return $node->access($operation, $account, TRUE);
+
+    // Check the node operation.
+    if ($operation && $node->access($operation, $account)) {
+      return AccessResult::allowed();
     }
+
+    // Check entity access.
+    if ($entity_access) {
+      // Check entity access for the YAML form.
+      if (strpos($entity_access, 'yamlform.') === 0
+        && $node->yamlform->entity->access(str_replace('yamlform.', '', $entity_access), $account)) {
+        return AccessResult::allowed();
+      }
+      // Check entity access for the YAML form submission.
+      if (strpos($entity_access, 'yamlform_submission.') === 0
+        && $yamlform_submission->access(str_replace('yamlform_submission.', '', $entity_access), $account)) {
+        return AccessResult::allowed();
+      }
+    }
+
+    return AccessResult::forbidden();
   }
 
 }

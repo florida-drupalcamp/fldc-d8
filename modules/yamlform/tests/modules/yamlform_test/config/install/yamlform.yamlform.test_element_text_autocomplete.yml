@@ -8,13 +8,13 @@ title: 'Test: Element: Textfield Autocomplete'
 description: 'Test the YAML form modules''s text element autocompletion.'
 elements: |
   autocomplete_options:
-    '#type': textfield
+    '#type': autocomplete
     '#title': 'autocomplete (options)'
     '#autocomplete_options': 'country_names'
     '#autocomplete_limit': 5
     '#autocomplete_match': 1
   autocomplete_existing:
-    '#type': textfield
+    '#type': autocomplete
     '#title': 'autocomplete (existing)'
     '#autocomplete_existing': TRUE
 settings:
@@ -27,6 +27,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

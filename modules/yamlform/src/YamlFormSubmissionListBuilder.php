@@ -73,6 +73,16 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
   protected $header;
 
   /**
+   * The table's header and element format settings.
+   *
+   * @var array
+   */
+  protected $format = [
+    'header_format' => 'label',
+    'element_format' => 'value',
+  ];
+
+  /**
    * The YAML form elements.
    *
    * @var array
@@ -108,6 +118,13 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
   protected $state;
 
   /**
+   * Track if table can be customized..
+   *
+   * @var bool
+   */
+  protected $customize;
+
+  /**
    * The YAMl form element manager.
    *
    * @var \Drupal\yamlform\YamlFormElementManagerInterface
@@ -137,23 +154,28 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
     $yamlform_submission_storage = $this->getStorage();
 
     if (\Drupal::routeMatch()->getRouteName() == "$base_route_name.yamlform.results_table") {
-      $this->elements = $this->yamlform->getElementsFlattenedAndHasValue();
-      // Use the default format when displaying each element.
-      foreach ($this->elements as &$element) {
-        unset($element['#format']);
-      }
       $this->columns = $yamlform_submission_storage->getCustomColumns($this->yamlform, $this->sourceEntity, $this->account, TRUE);
       $this->sort = $yamlform_submission_storage->getCustomSetting('sort', 'sid', $this->yamlform, $this->sourceEntity);
       $this->direction  = $yamlform_submission_storage->getCustomSetting('direction', 'desc', $this->yamlform, $this->sourceEntity);
       $this->limit = $yamlform_submission_storage->getCustomSetting('limit', 50, $this->yamlform, $this->sourceEntity);
+      $this->format = $yamlform_submission_storage->getCustomSetting('format', $this->format, $this->yamlform, $this->sourceEntity);
+      $this->customize = TRUE;
+      if ($this->format['element_format'] == 'raw') {
+        foreach ($this->columns as &$column) {
+          $column['format'] = 'raw';
+          if (isset($column['element'])) {
+            $column['element']['#format'] = 'raw';
+          }
+        }
+      }
     }
     else {
       $this->columns = $yamlform_submission_storage->getDefaultColumns($this->yamlform, $this->sourceEntity, $this->account, FALSE);
       $this->sort = 'sid';
       $this->direction  = 'desc';
       $this->limit = 50;
+      $this->customize = FALSE;
     }
-
   }
 
   /**
@@ -181,7 +203,7 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
     }
 
     // Customize.
-    if ($this->elements) {
+    if ($this->customize) {
       $route_name = $this->yamlFormRequest->getRouteName($this->yamlform, $this->sourceEntity, 'yamlform.results_table.custom');
       $route_parameters = $this->yamlFormRequest->getRouteParameters($this->yamlform, $this->sourceEntity) + ['yamlform' => $this->yamlform->id()];
       $route_options = ['query' => \Drupal::destination()->getAsArray()];
@@ -254,7 +276,12 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
    */
   protected function buildHeaderColumn(array $column) {
     $name = $column['name'];
-    $title = $column['title'];
+    if ($this->format['header_format'] == 'key') {
+      $title = isset($column['key']) ? $column['key'] : $column['name'];
+    }
+    else {
+      $title = $column['title'];
+    }
 
     switch ($name) {
       case 'notes':
@@ -317,19 +344,24 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
    *   Throw exception if table row column is not found.
    */
   public function buildRowColumn(array $column, EntityInterface $entity) {
+    $is_raw = ($column['format'] == 'raw');
     $name = $column['name'];
 
     switch ($name) {
       case 'created':
       case 'completed':
       case 'changed':
-        return \Drupal::service('date.formatter')->format($entity->created->value);
+        return ($is_raw) ? $entity->created->value : \Drupal::service('date.formatter')->format($entity->created->value);
 
       case 'entity':
-        return ($source_entity = $entity->getSourceEntity()) ? $source_entity->toLink() : '';
+        $source_entity = $entity->getSourceEntity();
+        if (!$source_entity) {
+          return '';
+        }
+        return ($is_raw) ? $source_entity->getEntityTypeId . ':' . $source_entity->id() : $source_entity->toLink();
 
       case 'langcode':
-        return \Drupal::languageManager()->getLanguage($entity->langcode->value)->getName();
+        return ($is_raw) ? $entity->langcode->value : \Drupal::languageManager()->getLanguage($entity->langcode->value)->getName();
 
       case 'notes':
         $route_name = $this->yamlFormRequest->getRouteName($entity, $entity->getSourceEntity(), 'yamlform_submission.notes_form');
@@ -376,21 +408,23 @@ class YamlFormSubmissionListBuilder extends EntityListBuilder {
         ];
 
       case 'uid':
-        return $entity->getOwner()->getAccountName() ?: t('Anonymous');
+        return ($is_raw) ? $entity->getOwner()->id() : ($entity->getOwner()->getAccountName() ?: t('Anonymous'));
 
       case 'uuid':
         return $entity->uuid();
 
       case 'yamlform_id':
-        return $entity->getYamlForm()->toLink();
+        return ($is_raw) ? $entity->getYamlForm()->id() : $entity->getYamlForm()->toLink();
 
       default:
         if (strpos($name, 'element__') === 0) {
           $data = $entity->getData();
 
           $element = $column['element'];
+
           $key = $column['key'];
           $value  = (isset($data[$key])) ? $data[$key] : '';
+
           $options = $column;
 
           /** @var \Drupal\yamlform\YamlFormElementInterface $element_handler */

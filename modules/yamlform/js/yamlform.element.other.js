@@ -8,20 +8,27 @@
   "use strict";
 
   /**
-   * Toggle other text field.
+   * Toggle other input (text) field.
    *
    * @param {boolean} show
    *   TRUE will display the text field. FALSE with hide and clear the text field.
-   * @param {object} $textField
-   *   The text field to be toggled.
+   * @param {object} $input
+   *   The input (text) field to be toggled.
    */
-  function toggleOther(show, $textField) {
+  function toggleOther(show, $input) {
     if (show) {
-      $textField.slideDown().find('element').focus();
+      // Limit the other inputs width to the parent's container.
+      $input.width($input.parent().width());
+      // Display the input.
+      $input.slideDown().find('input').focus();
+      // Refresh CodeMirror used as other element.
+      $input.parent().find('.CodeMirror').each(function (index, $element) {
+        $element.CodeMirror.refresh();
+      });
     }
     else {
-      $textField.slideUp();
-      $textField.find('element').val('');
+      $input.slideUp();
+      $input.find('input').val('');
     }
   }
 
@@ -35,14 +42,14 @@
 
         var $select = $element.find('.form-type-select');
         var $otherOption = $element.find('option[value="_other_"]');
-        var $textField = $element.find('.form-type-textfield');
+        var $input = $element.find('.js-yamlform-select-other-input');
 
         if ($otherOption.is(':selected')) {
-          $textField.show();
+          $input.show();
         }
 
         $select.on('change', function () {
-          toggleOther($otherOption.is(':selected'), $textField);
+          toggleOther($otherOption.is(':selected'), $input);
         });
       });
     }
@@ -56,14 +63,14 @@
       $(context).find('.form-type-yamlform-checkboxes-other').once().each(function () {
         var $element = $(this);
         var $checkbox = $element.find('input[value="_other_"]');
-        var $textField = $element.find('.form-type-textfield');
+        var $input = $element.find('.js-yamlform-checkboxes-other-input');
 
         if ($checkbox.is(':checked')) {
-          $textField.show();
+          $input.show();
         }
 
         $checkbox.on('click', function () {
-          toggleOther(this.checked, $textField);
+          toggleOther(this.checked, $input);
         });
       });
     }
@@ -78,14 +85,14 @@
         var $element = $(this);
 
         var $radios = $element.find('input[type="radio"]');
-        var $textField = $element.find('.form-type-textfield');
+        var input = $element.find('.js-yamlform-radios-other-input');
 
         if ($radios.filter(':checked').val() === '_other_') {
-          $textField.show();
+          input.show();
         }
 
         $radios.on('click', function () {
-          toggleOther(($radios.filter(':checked').val() === '_other_'), $textField);
+          toggleOther(($radios.filter(':checked').val() === '_other_'), input);
         });
       });
     }

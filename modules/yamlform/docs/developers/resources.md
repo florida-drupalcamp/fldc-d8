@@ -63,17 +63,24 @@ Below are the YAML Form module's 'competitors'.
  
 - [The Best Online Survey Tools of 2016](http://www.pcmag.com/article2/0,2817,2494737,00.asp)
 
+- [AlternativeTo WebForm](http://alternativeto.net/software/webform/)
+  Crowdsourced software recommendations
+
 ---
 
-- [Form.IO](https://form.io/)  
+- [Form.IO](https://form.io/)
   Form.io A Form and Data Management Platform for Serverless Enterprise 
   Applications Simplify the connections between your forms and APIs. 
   Integrate with 3rd party providers and legacy systems. 
   All while maintaining control of your data.
 
-- [Cognito Forms](https://www.cognitoforms.com)
+- [Cognito Forms](https://www.cognitoforms.com)  
   A free online form builder that helps you create HTML forms for your website. 
   Create contact forms, registration forms, order forms, surveys, and more.
+
+- [Gravity Forms](http://www.gravityforms.com/)  
+  Gravity Forms is the Easiest Tool to Create Advanced Forms for Your WordPress 
+  Powered Website.
 
 - [FormSite](https://www.formsite.com)  
   Easily build professional online html forms and web surveys. 
@@ -81,7 +88,10 @@ Below are the YAML Form module's 'competitors'.
 - [JotForm](https://jotform.com/)   
   JotForm's form builder helps you create & publish online forms anywhere, 
   anytime without writing a single line of code.
- 
+
+- [Ninja Forms](https://ninjaforms.com/)  
+  The easiest and most flexible WordPress form builder!
+
 - [Wufoo](https://www.wufoo.com)  
   Our form designer can help you create contact forms, online surveys and 
   invitations so you can collect the data, registrations and payments you need. 

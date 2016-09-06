@@ -78,8 +78,13 @@ class YamlFormBreadcrumbBuilder implements BreadcrumbBuilderInterface {
       $breadcrumb = new Breadcrumb();
       $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
       $breadcrumb->addLink($source_entity->toLink());
-      if ($route_match->getParameter('yamlform_submission')) {
-        $breadcrumb->addLink(Link::createFromRoute($this->t('Results'), "entity.$entity_type.yamlform.results_submissions", [$entity_type => $entity_id]));
+      if ($yamlform_submission = $route_match->getParameter('yamlform_submission')) {
+        if ($source_entity->access('yamlform_submission_view') || $yamlform_submission->access('view_any')) {
+          $breadcrumb->addLink(Link::createFromRoute($this->t('Results'), "entity.$entity_type.yamlform.results_submissions", [$entity_type => $entity_id]));
+        }
+        elseif ($yamlform_submission->access('view_own')) {
+          $breadcrumb->addLink(Link::createFromRoute($this->t('Results'), "entity.$entity_type.yamlform.submissions", [$entity_type => $entity_id]));
+        }
       }
     }
     else {

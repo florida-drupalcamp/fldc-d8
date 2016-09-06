@@ -29,11 +29,10 @@ class Item extends ContainerBase {
 
       'title_display' => '',
       'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
       'field_prefix' => '',
       'field_suffix' => '',
 
+      'admin_title' => '',
       'private' => FALSE,
     ];
   }

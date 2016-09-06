@@ -103,7 +103,7 @@ class YamlFormSubmissionFormSettingsTest extends YamlFormTestBase {
     $this->assertRaw('This form is closed.');
 
     // Check form closed message is displayed.
-    $yamlform_closed->setSettings(['form_closed_message' => '']);
+    $yamlform_closed->setSetting('form_closed_message', '');
     $yamlform_closed->save();
     $this->drupalGet('yamlform/test_form_closed');
     $this->assertNoRaw('This form is closed.');
@@ -145,10 +145,30 @@ class YamlFormSubmissionFormSettingsTest extends YamlFormTestBase {
     $this->assertNoFieldChecked('edit-colors-blue');
 
     // Check disabling prepopulation of an element.
-    $yamlform_prepopulate->setSettings(['form_prepopulate' => FALSE]);
+    $yamlform_prepopulate->setSetting('form_prepopulate', FALSE);
     $yamlform_prepopulate->save();
     $this->drupalGet('yamlform/test_form_prepopulate', ['query' => ['name' => 'John']]);
     $this->assertFieldByName('name', '');
+
+    /* Test form prepopulate source entity (form_prepopulate_source_entity) */
+
+    // Check prepopulating source entity.
+    $this->drupalPostForm('yamlform/test_form_prepopulate', [], t('Submit'), ['query' => ['source_entity_type' => 'yamlform', 'source_entity_id' => 'contact']]);
+    $sid = $this->getLastSubmissionId($yamlform_prepopulate);
+    $submission = YamlFormSubmission::load($sid);
+    $this->assertNotNull($submission->getSourceEntity());
+    if ($submission->getSourceEntity()) {
+      $this->assertEqual($submission->getSourceEntity()->getEntityTypeId(), 'yamlform');
+      $this->assertEqual($submission->getSourceEntity()->id(), 'contact');
+    }
+
+    // Check disabling prepopulation source entity.
+    $yamlform_prepopulate->setSetting('form_prepopulate_source_entity', FALSE);
+    $yamlform_prepopulate->save();
+    $this->drupalPostForm('yamlform/test_form_prepopulate', [], t('Submit'), ['query' => ['source_entity_type' => 'yamlform', 'source_entity_id' => 'contact']]);
+    $sid = $this->getLastSubmissionId($yamlform_prepopulate);
+    $submission = YamlFormSubmission::load($sid);
+    $this->assert(!$submission->getSourceEntity());
 
     /* Test form (client-side) novalidate (form_novalidate) */
 
@@ -159,7 +179,7 @@ class YamlFormSubmissionFormSettingsTest extends YamlFormTestBase {
     $this->assertCssSelect('form[novalidate="novalidate"]', t('Form has the proper novalidate attribute.'));
 
     // Disable YAML specific form client-side validation setting.
-    $yamlform_form_novalidate->setSettings(['form_novalidate' => FALSE]);
+    $yamlform_form_novalidate->setSetting('form_novalidate', FALSE);
     $yamlform_form_novalidate->save();
 
     // Check novalidate checkbox is enabled.

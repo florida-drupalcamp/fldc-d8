@@ -395,9 +395,10 @@ class YamlFormSubmissionStorage extends SqlContentEntityStorage implements YamlF
       ];
     }
 
-    // Add name to all columns.
+    // Add name and format to all columns.
     foreach ($columns as $name => &$column) {
       $column['name'] = $name;
+      $column['format'] = 'value';
     }
 
     return $columns;

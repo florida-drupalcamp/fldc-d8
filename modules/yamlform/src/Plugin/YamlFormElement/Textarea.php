@@ -26,17 +26,19 @@ class Textarea extends TextBase {
       'description' => '',
 
       'required' => FALSE,
+      'required_error' => '',
       'default_value' => '',
 
       'title_display' => '',
       'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
       'field_prefix' => '',
       'field_suffix' => '',
+      'placeholder' => '',
 
-      'private' => FALSE,
       'unique' => FALSE,
+
+      'admin_title' => '',
+      'private' => FALSE,
 
       'format' => $this->getDefaultFormat(),
 
@@ -44,6 +46,13 @@ class Textarea extends TextBase {
       'counter_maximum' => '',
       'counter_message' => '',
       'rows' => '',
+
+      'wrapper_attributes__class' => '',
+      'wrapper_attributes__style' => '',
+      'attributes__class' => '',
+      'attributes__style' => '',
+
+      'flex' => 1,
     ];
   }
 

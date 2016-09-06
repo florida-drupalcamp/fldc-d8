@@ -69,7 +69,7 @@ class YamlFormOptions extends FormElement {
     $element['#element_validate'] = [[get_called_class(), 'validateYamlFormOptions']];
 
     // Wrap this $element in a <div> that handle #states.
-    YamlFormElementHelper::fixStates($element);
+    YamlFormElementHelper::fixWrapper($element);
 
     // For options with optgroup display a CodeMirror YAML editor.
     if (isset($element['#default_value']) && is_array($element['#default_value']) && self::hasOptGroup($element['#default_value'])) {
@@ -345,7 +345,15 @@ class YamlFormOptions extends FormElement {
 
     // Validate required options.
     if (!empty($element['#required']) && empty($options)) {
-      $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      if (isset($element['#required_error'])) {
+        $form_state->setError($element, $element['#required_error']);
+      }
+      elseif (isset($element['#title'])) {
+        $form_state->setError($element, t('@name field is required.', ['@name' => $element['#title']]));
+      }
+      else {
+        $form_state->setError($element);
+      }
       return $element;
     }
 

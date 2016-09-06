@@ -15,4 +15,15 @@ namespace Drupal\yamlform\Plugin\YamlFormElement;
  */
 class Container extends ContainerBase {
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultProperties() {
+    return [
+      'attributes__class' => '',
+      'attributes__style' => '',
+      'flex' => 1,
+    ];
+  }
+
 }

@@ -73,6 +73,17 @@ interface YamlFormElementInterface extends PluginInspectionInterface, PluginForm
   public function hasValue(array $element);
 
   /**
+   * Checks if the YAML form element has a wrapper.
+   *
+   * @param array $element
+   *   An element.
+   *
+   * @return bool
+   *   TRUE if the YAML form element has a wrapper.
+   */
+  public function hasWrapper(array $element);
+
+  /**
    * Checks if YAML form element is a container that can contain elements.
    *
    * @param array $element
@@ -149,18 +160,18 @@ interface YamlFormElementInterface extends PluginInspectionInterface, PluginForm
    */
   public function getRelatedTypes(array $element);
 
-    /**
-     * Gets the actual configuration form array to be built.
-     *
-     * @param array $form
-     *   An associative array containing the structure of the form.
-     * @param \Drupal\Core\Form\FormStateInterface $form_state
-     *   The current state of the form.
-     *
-     * @return array
-     *   An associative array contain the element's configuration form without
-     *   any default values..
-     */
+  /**
+   * Gets the actual configuration form array to be built.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   An associative array contain the element's configuration form without
+   *   any default values..
+   */
   public function form(array $form, FormStateInterface $form_state);
 
   /**
@@ -199,6 +210,17 @@ interface YamlFormElementInterface extends PluginInspectionInterface, PluginForm
    *   An element's label (#title or #yamlform_key).
    */
   public function getLabel(array $element);
+
+  /**
+   * Get an element's admin label (#admin_title, #title or #yamlform_key).
+   *
+   * @param array $element
+   *   An element.
+   *
+   * @return string
+   *   An element's label (#admin_title, #title or #yamlform_key).
+   */
+  public function getAdminLabel(array $element);
 
   /**
    * Get an element's key/name.
@@ -335,7 +357,7 @@ interface YamlFormElementInterface extends PluginInspectionInterface, PluginForm
    * @return array|string
    *   The element's value formatted as an HTML string or a render array.
    */
-  public function formatTableColumn(array &$element, $value, array $options = []);
+  public function formatTableColumn(array $element, $value, array $options = []);
 
   /**
    * Get an element's default export options.

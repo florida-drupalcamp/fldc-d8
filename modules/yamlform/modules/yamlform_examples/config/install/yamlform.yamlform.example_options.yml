@@ -19,6 +19,18 @@ elements: |
       '#type': radios
       '#title': 'Gender'
       '#options': gender
+    ethnicity:
+      '#type': radios_other
+      '#title': 'Ethnicity'
+      '#options': ethnicity
+    relationship:
+      '#type': radios_other
+      '#title': 'Relationship'
+      '#options': relationship
+    marital_status:
+      '#type': radios
+      '#title': 'Marital status'
+      '#options': marital_status
   date_options:
     '#title': 'Date Options'
     '#type': details
@@ -153,6 +165,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

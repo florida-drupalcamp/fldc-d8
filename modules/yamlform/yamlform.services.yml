@@ -14,7 +14,7 @@ services:
 
   yamlform.request:
     class: Drupal\yamlform\YamlFormRequest
-    arguments: ['@entity.manager', '@current_route_match']
+    arguments: ['@entity.manager', '@request_stack', '@current_route_match']
 
   yamlform.message_manager:
     class: Drupal\yamlform\YamlFormMessageManager

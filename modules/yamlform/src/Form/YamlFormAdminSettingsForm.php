@@ -295,6 +295,20 @@ class YamlFormAdminSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Allowed tags are applied to an element propperty that may contain HTML. This includes element title, description, prefix, and suffix'),
       '#default_value' => $config->get('elements.allowed_tags'),
     ];
+    $form['elements']['wrapper_classes'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Wrapper CSS classes'),
+      '#description' => $this->t('A list of classes that will be provided in the "Wrapper CSS classes" dropdown. Enter one or more classes on each line. These styles should be available in your theme\'s CSS file.'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('elements.wrapper_classes'),
+    ];
+    $form['elements']['classes'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Element CSS classes'),
+      '#description' => $this->t('A list of classes that will be provided in the "Element CSS classes" dropdown. Enter one or more classes on each line. These styles should be available in your theme\'s CSS file.'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('elements.classes'),
+    ];
     $form['elements']['default_description_display'] = [
       '#type' => 'select',
       '#title' => $this->t('Default description display'),
@@ -515,7 +529,7 @@ class YamlFormAdminSettingsForm extends ConfigFormBase {
     ];
     $form['ui']['html_editor_disabled'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('DiHTML editor dialogs'),
+      '#title' => $this->t('Disable HTML editor dialogs'),
       '#description' => $this->t('If checked, all HTML editor will be disabled.'),
       '#return_value' => TRUE,
       '#default_value' => $config->get('ui.html_editor_disabled'),

@@ -5,6 +5,7 @@ namespace Drupal\yamlform;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Handles YAML form requests.
@@ -26,15 +27,25 @@ class YamlFormRequest implements YamlFormRequestInterface {
   protected $routeMatch;
 
   /**
+   * The current request.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected $request;
+
+  /**
    * Constructs a YamlFormSubmissionExporter object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    */
-  public function __construct(EntityManagerInterface $entity_manager, RouteMatchInterface $route_match) {
+  public function __construct(EntityManagerInterface $entity_manager, RequestStack $request_stack, RouteMatchInterface $route_match) {
     $this->entityManager = $entity_manager;
+    $this->request = $request_stack->getCurrentRequest();
     $this->routeMatch = $route_match;
   }
 
@@ -42,6 +53,11 @@ class YamlFormRequest implements YamlFormRequestInterface {
    * {@inheritdoc}
    */
   public function getCurrentSourceEntity($ignored_types = NULL) {
+    // See if source entity is being set via query string parameters.
+    if ($source_entity = $this->getCurrentSourceEntityFromQuery()) {
+      return $source_entity;
+    }
+
     $entity_types = $this->entityManager->getEntityTypeLabels();
     if ($ignored_types) {
       if (is_array($ignored_types)) {
@@ -181,6 +197,59 @@ class YamlFormRequest implements YamlFormRequestInterface {
     else {
       return FALSE;
     }
+  }
+
+  /**
+   * Get YAML form submission source entity from query string.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   A source entity.
+   */
+  protected function getCurrentSourceEntityFromQuery() {
+    // Get and check YAML Form.
+    $yamlform = $this->routeMatch->getParameter('yamlform');
+    if (!$yamlform) {
+      return NULL;
+    }
+
+    // Get and check source entity type.
+    $source_entity_type = $this->request->query->get('source_entity_type');
+    if (!$source_entity_type) {
+      return NULL;
+    }
+
+    // Get and check source entity id.
+    $source_entity_id = $this->request->query->get('source_entity_id');
+    if (!$source_entity_id) {
+      return NULL;
+    }
+
+    // Get and check source entity.
+    $source_entity = \Drupal::entityTypeManager()->getStorage($source_entity_type)->load($source_entity_id);
+    if (!$source_entity) {
+      return NULL;
+    }
+
+    // Check source entity access.
+    if (!$source_entity->access('view')) {
+      return NULL;
+    }
+
+    // Check that the YAML form is referenced by the source entity.
+    if (!$yamlform->getSetting('form_prepopulate_source_entity')) {
+      // Check that source entity has 'yamlform' field and it is populated.
+      if (!method_exists($source_entity, 'hasField') || !$source_entity->hasField('yamlform') || !$source_entity->yamlform->target_id) {
+        return NULL;
+      }
+
+      // Check that source entity's reference YAML form is the current YAML
+      // form.
+      if ($source_entity->yamlform->target_id != $yamlform->id()) {
+        return NULL;
+      }
+    }
+
+    return $source_entity;
   }
 
 }

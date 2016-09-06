@@ -303,6 +303,11 @@ abstract class YamlFormHandlerBase extends PluginBase implements YamlFormHandler
   /**
    * {@inheritdoc}
    */
+  public function confirmForm(array &$form, FormStateInterface $form_state, YamlFormSubmissionInterface $yamlform_submission) {}
+
+  /**
+   * {@inheritdoc}
+   */
   public function preCreate(array $values) {}
 
   /**

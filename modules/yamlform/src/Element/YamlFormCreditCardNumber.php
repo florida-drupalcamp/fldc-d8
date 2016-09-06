@@ -115,7 +115,7 @@ class YamlFormCreditCardNumber extends FormElement {
   public static function preRenderYamlFormCreditCardNumber($element) {
     $element['#attributes']['type'] = 'text';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
-    static::setAttributes($element, ['form-textfield', 'form-creditcard_number']);
+    static::setAttributes($element, ['form-textfield', 'form-creditcard-number']);
     return $element;
   }
 

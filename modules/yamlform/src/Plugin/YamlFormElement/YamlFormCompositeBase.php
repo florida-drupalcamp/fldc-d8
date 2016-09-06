@@ -74,12 +74,14 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
     $properties = [
       'title' => '',
       'description' => '',
+
       'default_value' => [],
       'required' => FALSE,
+
       'title_display' => '',
       'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
+
+      'flex' => 1,
     ];
 
     $composite_elements = $this->getCompositeElements();
@@ -148,7 +150,7 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function formatTableColumn(array &$element, $value, array $options = []) {
+  public function formatTableColumn(array $element, $value, array $options = []) {
     if (isset($options['composite_key']) && isset($options['composite_element'])) {
       $composite_key = $options['composite_key'];
       $composite_element = $options['composite_element'];
@@ -354,15 +356,29 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
   public function formatHtml(array &$element, $value, array $options = []) {
     $format = $this->getFormat($element);
     switch ($format) {
-      case 'raw':
+      case 'list':
         $items = [];
         $composite_elements = $this->getInitializedCompositeElement($element);
         foreach (RenderElement::children($composite_elements) as $composite_key) {
           $composite_element = $composite_elements[$composite_key];
-          $composite_title = $composite_element['#title'];
-          $composite_value = $value[$composite_key];
+          $composite_title = (isset($composite_element['#title'])) ? $composite_element['#title'] : $composite_key;
+          $composite_value = (isset($value[$composite_key])) ? $value[$composite_key] : '';
           if ($composite_value !== '') {
             $items[$composite_key] = ['#markup' => "<b>$composite_title:</b> $composite_value"];
+          }
+        }
+        return [
+          '#theme' => 'item_list',
+          '#items' => $items,
+        ];
+
+      case 'raw':
+        $items = [];
+        $composite_elements = $this->getInitializedCompositeElement($element);
+        foreach (RenderElement::children($composite_elements) as $composite_key) {
+          $composite_value = (isset($value[$composite_key])) ? $value[$composite_key] : '';
+          if ($composite_value !== '') {
+            $items[$composite_key] = ['#markup' => "<b>$composite_key:</b> $composite_value"];
           }
         }
         return [
@@ -392,6 +408,15 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
   /**
    * {@inheritdoc}
    */
+  public function getFormats() {
+    return parent::getFormats() + [
+      'list' => $this->t('List'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function formatText(array &$element, $value, array $options = []) {
     // Return empty value.
     if (is_array($value) && empty($value)) {
@@ -400,7 +425,7 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
 
     $format = $this->getFormat($element);
     switch ($format) {
-      case 'raw':
+      case 'list':
         $items = [];
         $composite_elements = $this->getInitializedCompositeElement($element);
         foreach (RenderElement::children($composite_elements) as $composite_key) {
@@ -409,6 +434,17 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
           $composite_value = $value[$composite_key];
           if ($composite_value !== '') {
             $items[$composite_key] = "$composite_title: $composite_value";
+          }
+        }
+        return implode("\n", $items);
+
+      case 'raw':
+        $items = [];
+        $composite_elements = $this->getInitializedCompositeElement($element);
+        foreach (RenderElement::children($composite_elements) as $composite_key) {
+          $composite_value = $value[$composite_key];
+          if ($composite_value !== '') {
+            $items[$composite_key] = "$composite_key: $composite_value";
           }
         }
         return implode("\n", $items);
@@ -463,7 +499,7 @@ abstract class YamlFormCompositeBase extends YamlFormElementBase {
     $header = [];
     $composite_elements = $this->getInitializedCompositeElement($element);
     if ($options['composite_header_prefix']) {
-      $prefix_title = ((!empty($element['#title'])) ? $element['#title'] : $element['#yamlform_key']) . ': ';
+      $prefix_title = $this->getAdminLabel($element) . ': ';
       $prefix_key = $element['#yamlform_key'] . '__';
     }
     else {

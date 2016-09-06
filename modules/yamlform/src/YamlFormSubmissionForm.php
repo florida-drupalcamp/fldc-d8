@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Url;
 use Drupal\yamlform\Controller\YamlFormController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -175,7 +177,6 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
     /* @var $yamlform_submission \Drupal\yamlform\YamlFormSubmissionInterface */
     $yamlform_submission = $this->getEntity();
-    $settings = $this->getYamlFormSettings();
 
     // Prepend YAML form submission data using the default view without the data.
     if (!$yamlform_submission->isNew() && !$yamlform_submission->isDraft()) {
@@ -211,7 +212,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     $this->prepareElements($elements);
 
     // Handle form with managed file upload but saving of submission is disabled.
-    if ($this->getYamlForm()->hasManagedFile() && !empty($settings['results_disabled'])) {
+    if ($this->getYamlForm()->hasManagedFile() && !empty($this->getYamlFormSetting('results_disabled'))) {
       $this->messageManager->log(YamlFormMessageManagerInterface::FORM_FILE_UPLOAD_EXCEPTION, 'notice');
       $this->messageManager->display(YamlFormMessageManagerInterface::FORM_EXCEPTION, 'warning');
       return $form;
@@ -224,7 +225,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     $this->initFormWizardState($form, $form_state);
 
     // Add wizard progress tracker to the form.
-    if ($settings['wizard_progress_bar'] || $settings['wizard_progress_pages'] || $settings['wizard_progress_percentage']) {
+    if ($this->getYamlFormSetting('wizard_progress_bar') || $this->getYamlFormSetting('wizard_progress_pages') || $this->getYamlFormSetting('wizard_progress_percentage')) {
       $wizard = $form_state->get('wizard');
       $form['progress'] = [
         '#theme' => 'yamlform_progress',
@@ -271,7 +272,6 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     /* @var $yamlform_submission \Drupal\yamlform\YamlFormSubmissionInterface */
     $yamlform_submission = $this->getEntity();
     $yamlform = $this->getYamlForm();
-    $settings = $this->getYamlFormSettings();
 
     // Exit if elements are broken, usually occurs when elements YAML is edited
     // directly in the export config file.
@@ -282,7 +282,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
     // Display inline confirmation message with back to link which is rendered
     // via the controller.
-    if ($settings['confirmation_type'] == 'inline' && $this->getRequest()->query->get('yamlform_id') == $yamlform->id()) {
+    if ($this->getYamlFormSetting('confirmation_type') == 'inline' && $this->getRequest()->query->get('yamlform_id') == $yamlform->id()) {
       $yamlform_controller = new YamlFormController($this->yamlFormRequest, $this->messageManager);
       $form['confirmation'] = $yamlform_controller->confirmation($this->getRequest(), $yamlform);
       return $form;
@@ -314,7 +314,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
     // Disable this form if submissions are not being saved to the database or
     // passed to a YamlFormHandler.
-    if (!empty($settings['results_disabled']) && !$yamlform->getHandlers(NULL, TRUE, YamlFormHandlerInterface::RESULTS_PROCESSED)->count()) {
+    if ($this->getYamlFormSetting('results_disabled') && !$yamlform->getHandlers(NULL, TRUE, YamlFormHandlerInterface::RESULTS_PROCESSED)->count()) {
       $this->messageManager->log(YamlFormMessageManagerInterface::FORM_SAVE_EXCEPTION, 'error');
       if ($this->currentUser()->hasPermission('administer yamlform')) {
         // Display error to admin but allow them to submit the broken form.
@@ -413,8 +413,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     $element = parent::actions($form, $form_state);
 
     /* @var \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission */
-    $settings = $this->getYamlFormSettings();
-    $preview_mode = $settings['preview'];
+    $preview_mode = $this->getYamlFormSetting('preview');
     $wizard = $form_state->get('wizard');
 
     // Remove the delete button from the YAML form submission form.
@@ -424,23 +423,25 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     $element['submit']['#button_type'] = 'primary';
 
     // Customize the submit button.
-    $element['submit']['#value'] = $settings['form_submit_label'];
+    $element['submit']['#value'] = $this->getYamlFormSetting('form_submit_label');
 
-    // Add completed validate handler to submit.
+    // Add validate and complete handler to submit.
     $element['submit']['#validate'][] = '::validateForm';
     $element['submit']['#validate'][] = '::complete';
 
-    // Add confirmation submit handler to submit button.
-    $element['submit']['#submit'][] = '::confirmation';
+    // Add confirm(ation) handler to submit button.
+    $element['submit']['#submit'][] = '::confirmForm';
 
     $wizard_enabled = ($wizard['total']) ? TRUE : FALSE;
-    $is_wizard_last_page = ($wizard['total'] == ($wizard['current'] + 2)) ? TRUE : FALSE;
+
     if ($wizard_enabled) {
+      $is_wizard_last_page = ($wizard['total'] == ($wizard['current'] + ($this->getYamlFormSetting('wizard_complete') ? 2 : 1))) ? TRUE : FALSE;
+      $is_preview_page = $this->isPreview($form_state);
+      $is_next_page_optional_preview = ($this->isNextPagePreview($form_state) && $preview_mode != DRUPAL_REQUIRED);
+
       // Only show that save button if this is the last page of the wizard or
-      // right before the optional preview.
-      $element['submit']['#access'] = $is_wizard_last_page
-        || ($this->isPreview($form_state)
-          || ($this->isNextPagePreview($form_state) && $preview_mode != DRUPAL_REQUIRED));
+      // on preview page or right before the optional preview.
+      $element['submit']['#access'] = $is_wizard_last_page || $is_preview_page || $is_next_page_optional_preview;
 
       // Get current page which can contain custom prev(ious) and next button
       // labels.
@@ -448,10 +449,10 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
       if ($wizard['current']) {
         if ($this->isPreview($form_state)) {
-          $previous_label = $settings['preview_prev_button_label'];
+          $previous_label = $this->getYamlFormSetting('preview_prev_button_label');
         }
         else {
-          $previous_label = (isset($current_page['#prev_button_label'])) ? $current_page['#prev_button_label'] : $settings['wizard_prev_button_label'];
+          $previous_label = (isset($current_page['#prev_button_label'])) ? $current_page['#prev_button_label'] : $this->getYamlFormSetting('wizard_prev_button_label');
         }
         $element['previous'] = [
           '#type' => 'submit',
@@ -463,10 +464,10 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
       if (!$is_wizard_last_page) {
         if ($this->isNextPagePreview($form_state)) {
-          $next_label = $settings['preview_next_button_label'];
+          $next_label = $this->getYamlFormSetting('preview_next_button_label');
         }
         else {
-          $next_label = (isset($current_page['#next_button_label'])) ? $current_page['#next_button_label'] : $settings['wizard_next_button_label'];
+          $next_label = (isset($current_page['#next_button_label'])) ? $current_page['#next_button_label'] : $this->getYamlFormSetting('wizard_next_button_label');
         }
         $element['next'] = [
           '#type' => 'submit',
@@ -482,7 +483,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     if ($this->draftEnabled()) {
       $element['draft'] = [
         '#type' => 'submit',
-        '#value' => $settings['draft_button_label'],
+        '#value' => $this->getYamlFormSetting('draft_button_label'),
         '#validate' => ['::draft'],
         '#submit' => ['::submitForm', '::save', '::rebuild'],
         '#weight' => -10,
@@ -580,91 +581,13 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    *   The current state of the form.
    */
   public function autosave(array &$form, FormStateInterface $form_state) {
-    $settings = $this->getYamlFormSettings();
-    if ($this->draftEnabled() && $settings['draft_auto_save'] && !$this->entity->isCompleted()) {
+    if ($this->draftEnabled() && $this->getYamlFormSetting('draft_auto_save') && !$this->entity->isCompleted()) {
       $form_state->setValue('in_draft', TRUE);
 
       $this->submitForm($form, $form_state);
       $this->save($form, $form_state);
       $this->rebuild($form, $form_state);
     }
-  }
-
-  /**
-   * Form submission handler for the 'confirmation' action.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public function confirmation(array &$form, FormStateInterface $form_state) {
-    /** @var \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission */
-    $yamlform_submission = $this->getEntity();
-    $yamlform = $yamlform_submission->getYamlForm();
-    $settings = $this->getYamlFormSettings();
-
-    // Get current route name, parameters, and options.
-    $route_name = $this->getRouteMatch()->getRouteName();
-    $route_parameters = $this->getRouteMatch()->getRawParameters()->all();
-    $route_options = [];
-    if ($query = $this->getRequest()->query->all()) {
-      $route_options['query'] = $query;
-    }
-
-    // Default to displaying a confirmation message on this page.
-    $state = $yamlform_submission->getState();
-    if ($state == YamlFormSubmissionInterface::STATE_UPDATED) {
-      $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_UPDATED);
-      $form_state->setRedirect($route_name, $route_parameters, $route_options);
-      return;
-    }
-
-    // Add token route query options.
-    if ($state == YamlFormSubmissionInterface::STATE_COMPLETED) {
-      $route_options['query']['token'] = $yamlform_submission->getToken();
-    }
-
-    // Handle 'page', 'url', and 'inline' confirmation types.
-    switch ($settings['confirmation_type']) {
-      case 'page':
-        $redirect_route_name = $this->yamlFormRequest->getRouteName($yamlform, $this->sourceEntity, 'yamlform.confirmation');
-        $redirect_route_parameters = $this->yamlFormRequest->getRouteParameters($yamlform, $this->sourceEntity);
-        $form_state->setRedirect($redirect_route_name, $redirect_route_parameters, $route_options);
-        return;
-
-      case 'url':
-        if ($confirmation_url = \Drupal::pathValidator()->getUrlIfValid(trim($settings['confirmation_url'])) ?: NULL) {
-          $form_state->setRedirectUrl($confirmation_url);
-          return;
-        }
-        // If confirmation URL is invalid display the default confirmation message.
-        $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION);
-        $route_options['query']['yamlform_id'] = $yamlform->id();
-        break;
-
-      case 'url_message':
-        if ($confirmation_url = \Drupal::pathValidator()->getUrlIfValid(trim($settings['confirmation_url'])) ?: NULL) {
-          $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION);
-          $form_state->setRedirectUrl($confirmation_url);
-          return;
-        }
-        $route_options['query']['yamlform_id'] = $yamlform->id();
-        break;
-
-      case 'inline':
-        $route_options['query']['yamlform_id'] = $yamlform->id();
-        break;
-
-      case 'message':
-      default:
-        if (!$this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION)) {
-          $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_DEFAULT_CONFIRMATION);
-        }
-        break;
-    }
-
-    $form_state->setRedirect($route_name, $route_parameters, $route_options);
   }
 
   /**
@@ -722,6 +645,24 @@ class YamlFormSubmissionForm extends ContentEntityForm {
 
     // Submit form via YAML form handler.
     $this->getYamlForm()->invokeHandlers('submitForm', $form, $form_state, $yamlform_submission);
+  }
+
+  /**
+   * Form confirm(ation) handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function confirmForm(array &$form, FormStateInterface $form_state) {
+    $this->setConfirmation($form_state);
+
+    /** @var \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission */
+    $yamlform_submission = $this->getEntity();
+
+    // Confirm form via YAML form handler.
+    $this->getYamlForm()->invokeHandlers('confirmForm', $form, $form_state, $yamlform_submission);
   }
 
   /**
@@ -849,6 +790,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
       foreach ($wizard['pages'] as $index => $page_key) {
         if ($index != $wizard['current']) {
           $form['elements'][$page_key]['#access'] = FALSE;
+          $this->hideElements($form['elements'][$page_key]);
         }
         else {
           $form['elements'][$page_key]['#type'] = 'container';
@@ -857,9 +799,113 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     }
   }
 
+  /**
+   * Set form state to redirect to a trusted redirect response.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   * @param \Drupal\Core\Url $url
+   *   A URL object.
+   */
+  protected function setTrustedRedirectUrl(FormStateInterface $form_state, Url $url) {
+    $form_state->setResponse(new TrustedRedirectResponse($url->setAbsolute()->toString()));
+  }
+
+  /**
+   * Set form state confirmation redirect and message.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  protected function setConfirmation(FormStateInterface $form_state) {
+    /** @var \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission */
+    $yamlform_submission = $this->getEntity();
+    $yamlform = $yamlform_submission->getYamlForm();
+
+    // Get current route name, parameters, and options.
+    $route_name = $this->getRouteMatch()->getRouteName();
+    $route_parameters = $this->getRouteMatch()->getRawParameters()->all();
+    $route_options = [];
+    if ($query = $this->getRequest()->query->all()) {
+      $route_options['query'] = $query;
+    }
+
+    // Default to displaying a confirmation message on this page.
+    $state = $yamlform_submission->getState();
+    if ($state == YamlFormSubmissionInterface::STATE_UPDATED) {
+      $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_UPDATED);
+      $form_state->setRedirect($route_name, $route_parameters, $route_options);
+      return;
+    }
+
+    // Add token route query options.
+    if ($state == YamlFormSubmissionInterface::STATE_COMPLETED) {
+      $route_options['query']['token'] = $yamlform_submission->getToken();
+    }
+
+    // Handle 'page', 'url', and 'inline' confirmation types.
+    $confirmation_url = trim($this->getYamlFormSetting('confirmation_url', ''));
+    switch ($this->getYamlFormSetting('confirmation_type')) {
+      case 'page':
+        $redirect_route_name = $this->yamlFormRequest->getRouteName($yamlform, $this->sourceEntity, 'yamlform.confirmation');
+        $redirect_route_parameters = $this->yamlFormRequest->getRouteParameters($yamlform, $this->sourceEntity);
+        $form_state->setRedirect($redirect_route_name, $redirect_route_parameters, $route_options);
+        return;
+
+      case 'url':
+        if ($redirect_url = \Drupal::pathValidator()->getUrlIfValid($confirmation_url) ?: NULL) {
+          $this->setTrustedRedirectUrl($form_state, $redirect_url);
+          return;
+        }
+        // If confirmation URL is invalid display the default
+        // confirmation message.
+        $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION);
+        $route_options['query']['yamlform_id'] = $yamlform->id();
+        break;
+
+      case 'url_message':
+        if ($redirect_url = \Drupal::pathValidator()->getUrlIfValid($confirmation_url) ?: NULL) {
+          $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION);
+          $this->setTrustedRedirectUrl($form_state, $redirect_url);
+          return;
+        }
+        $route_options['query']['yamlform_id'] = $yamlform->id();
+        break;
+
+      case 'inline':
+        $route_options['query']['yamlform_id'] = $yamlform->id();
+        break;
+
+      case 'message':
+      default:
+        if (!$this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_CONFIRMATION)) {
+          $this->messageManager->display(YamlFormMessageManagerInterface::SUBMISSION_DEFAULT_CONFIRMATION);
+        }
+        break;
+    }
+
+    $form_state->setRedirect($route_name, $route_parameters, $route_options);
+  }
+
   /****************************************************************************/
   // Elements functions
   /****************************************************************************/
+
+  /**
+   * Hide form elements by settings their #access to FALSE.
+   *
+   * @param array $elements
+   *   An render array representing elements.
+   */
+  protected function hideElements(&$elements) {
+    foreach ($elements as $key => &$element) {
+      if (Element::property($key) || !is_array($element)) {
+        continue;
+      }
+      $element['#access'] = FALSE;
+      $this->hideElements($element);
+    }
+  }
 
   /**
    * Prepare form elements.
@@ -893,8 +939,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    *   An array of default.
    */
   protected function prepopulateData(array &$data) {
-    $settings = $this->settings;
-    if (!empty($settings['form_prepopulate'])) {
+    if ($this->getYamlFormSetting('form_prepopulate')) {
       $data += $this->getRequest()->query->all();
     }
   }
@@ -934,20 +979,19 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    */
   protected function checkTotalLimit() {
     $yamlform = $this->getYamlForm();
-    $settings = $this->getYamlFormSettings();
 
     // Check per entity total limit.
-    if (!empty($settings['entity_limit_total']) && ($source_entity = $this->getLimitSourceEntity())) {
-      if ($this->storage->getTotal($yamlform, $source_entity) >= $settings['entity_limit_total']) {
+    $entity_limit_total = $this->getYamlFormSetting('entity_limit_total');
+    if ($entity_limit_total && ($source_entity = $this->getLimitSourceEntity())) {
+      if ($this->storage->getTotal($yamlform, $source_entity) >= $entity_limit_total) {
         return TRUE;
       }
     }
 
     // Check total limit.
-    if (!empty($settings['limit_total'])) {
-      if ($this->storage->getTotal($yamlform) >= $settings['limit_total']) {
-        return TRUE;
-      }
+    $limit_total = $this->getYamlFormSetting('limit_total');
+    if ($limit_total && $this->storage->getTotal($yamlform) >= $limit_total) {
+      return TRUE;
     }
 
     return FALSE;
@@ -962,7 +1006,6 @@ class YamlFormSubmissionForm extends ContentEntityForm {
   protected function checkUserLimit() {
     $account = $this->currentUser();
     $yamlform = $this->getYamlForm();
-    $settings = $this->getYamlFormSettings();
 
     // Anonymous users can't have limits.
     if ($account->isAnonymous()) {
@@ -970,17 +1013,17 @@ class YamlFormSubmissionForm extends ContentEntityForm {
     }
 
     // Check per entity user limit.
-    if (!empty($settings['entity_limit_user']) && ($source_entity = $this->getLimitSourceEntity())) {
-      if ($this->storage->getTotal($yamlform, $source_entity, $account) >= $settings['entity_limit_user']) {
+    $entity_limit_user = $this->getYamlFormSetting('entity_limit_user');
+    if ($entity_limit_user && ($source_entity = $this->getLimitSourceEntity())) {
+      if ($this->storage->getTotal($yamlform, $source_entity, $account) >= $entity_limit_user) {
         return TRUE;
       }
     }
 
     // Check user limit.
-    if (!empty($settings['limit_user'])) {
-      if ($this->storage->getTotal($yamlform, NULL, $account) >= $settings['limit_user']) {
-        return TRUE;
-      }
+    $limit_user = $this->getYamlFormSetting('limit_user');
+    if ($limit_user && $this->storage->getTotal($yamlform, NULL, $account) >= $limit_user) {
+      return TRUE;
     }
 
     return FALSE;
@@ -994,8 +1037,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    */
   protected function draftEnabled() {
     $account = $this->currentUser();
-    $settings = $this->getYamlFormSettings();
-    return ($account->isAuthenticated() && !empty($settings['draft']) && empty($settings['results_disabled'])) ? TRUE : FALSE;
+    return ($account->isAuthenticated() && $this->getYamlFormSetting('draft') && !$this->getYamlFormSetting('results_disabled')) ? TRUE : FALSE;
   }
 
   /**
@@ -1005,7 +1047,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    *   TRUE if the YAML form is confidential .
    */
   protected function isConfidential() {
-    return $this->getYamlForm()->getSetting('form_confidential') ? TRUE : FALSE;
+    return $this->getYamlFormSetting('form_confidential', FALSE);
   }
 
   /**
@@ -1015,8 +1057,7 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    *   TRUE if the client side validation disabled.
    */
   protected function isFormNoValidate() {
-    $settings = $this->getYamlFormSettings();
-    return $settings['form_novalidate'];
+    return $this->getYamlFormSetting('form_novalidate', FALSE);
   }
 
   /**
@@ -1119,33 +1160,6 @@ class YamlFormSubmissionForm extends ContentEntityForm {
   }
 
   /**
-   * Get the YAML form submission's YAML form settings.
-   *
-   * @return array
-   *   An associative array of settings.
-   */
-  protected function getYamlFormSettings() {
-    if (empty($this->settings)) {
-      // Get YAML form settings with default values.
-      $this->settings = $this->getYamlForm()->getSettings();
-      $default_settings = $this->config('yamlform.settings')->get('settings');
-      foreach ($default_settings as $key => $value) {
-        $key = str_replace('default_', '', $key);
-        if (empty($this->settings[$key])) {
-          $this->settings[$key] = $value;
-        }
-      }
-
-      // Replace token values.
-      foreach ($this->settings as $key => $value) {
-        $this->settings[$key] = $this->replaceTokens($value);
-      }
-    }
-
-    return $this->settings;
-  }
-
-  /**
    * Get a YAML form submission's YAML form setting.
    *
    * @param string $name
@@ -1157,8 +1171,24 @@ class YamlFormSubmissionForm extends ContentEntityForm {
    *   A YAML form setting.
    */
   protected function getYamlFormSetting($name, $default_value = NULL) {
-    $settings = $this->getYamlFormSettings();
-    return (isset($settings[$name])) ? $settings[$name] : $default_value;
+    // Get YAML form settings with default values.
+    if (empty($this->settings)) {
+      $this->settings = $this->getYamlForm()->getSettings();
+      $default_settings = $this->config('yamlform.settings')->get('settings');
+      foreach ($default_settings as $key => $value) {
+        $key = str_replace('default_', '', $key);
+        if (empty($this->settings[$key])) {
+          $this->settings[$key] = $value;
+        }
+      }
+    }
+
+    if (isset($this->settings[$name])) {
+      return $this->replaceTokens($this->settings[$name]);
+    }
+    else {
+      return $default_value;
+    }
   }
 
   /**

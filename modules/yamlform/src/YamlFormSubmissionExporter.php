@@ -3,13 +3,14 @@
 namespace Drupal\yamlform;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\yamlform\Entity\YamlFormSubmission;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\yamlform\Entity\YamlFormSubmission;
 
 /**
  * YAML form submission exporter.
@@ -191,6 +192,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
       'state' => 'all',
       'sticky' => '',
       'download' => TRUE,
+      'files' => FALSE,
     ];
 
     // Append element handler default options.
@@ -240,10 +242,10 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
     $form['export']['format']['header_keys'] = [
       '#type' => 'radios',
       '#title' => $this->t('Column header format'),
-      '#description' => $this->t('Choose whether to show the label or field key in each column header.'),
+      '#description' => $this->t('Choose whether to show the element label or element key in each column header.'),
       '#options' => [
         'label' => $this->t('Element titles (label)'),
-        'key' => $this->t('Element names (key)'),
+        'key' => $this->t('Element keys (key)'),
       ],
       '#default_value' => $default_values['header_keys'],
     ];
@@ -289,7 +291,19 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
       '#title' => $this->t('Download CSV'),
       '#description' => $this->t('If checked the CSV file will be automatically download to your local machine. If unchecked CSV file will be displayed as plain text within your browser.'),
       '#default_value' => $default_values['download'],
-      '#access' => !$this->requiresBatch($yamlform),
+      '#access' => !$this->requiresBatch(),
+    ];
+    $form['export']['download']['files'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Download files'),
+      '#description' => $this->t('If checked, the exported CSV file and any submission file uploads will be download in a gzipped tar file.'),
+      '#access' => $yamlform->hasManagedFile(),
+      '#states' => [
+        'invisible' => [
+          ':input[name="export[download][download]"]' => ['checked' => FALSE],
+        ],
+      ],
+      '#default_value' => ($yamlform->hasManagedFile()) ? $default_values['files'] : 0,
     ];
 
     $source_entity = $this->getSourceEntity();
@@ -338,7 +352,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
     ];
     $form['export']['download']['latest'] = [
       '#type' => 'container',
-      '#attributes' => ['class' => 'container-inline'],
+      '#attributes' => ['class' => ['container-inline']],
       '#states' => [
         'visible' => [
           ':input[name="export[download][range_type]"]' => ['value' => 'latest'],
@@ -357,7 +371,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
     foreach ($ranges as $key => $range_element) {
       $form['export']['download'][$key] = [
         '#type' => 'container',
-        '#attributes' => ['class' => 'container-inline'],
+        '#attributes' => ['class' => ['container-inline']],
         '#states' => [
           'visible' => [
             ':input[name="export[download][range_type]"]' => ['value' => $key],
@@ -407,6 +421,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
     if (isset($export_values['download'])) {
       $values['state'] = $export_values['download']['state'];
       $values['download'] = $export_values['download']['download'];
+      $values['files'] = $export_values['download']['files'];
       $values['sticky'] = $export_values['download']['sticky'];
       if (!empty($export_values['download']['submitted']['entity_type'])) {
         $values += $export_values['download']['submitted'];
@@ -449,9 +464,9 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function generate(YamlFormInterface $yamlform, array $export_options) {
+  public function generate(array $export_options) {
     $field_definitions = $this->getFieldDefinitions($export_options);
-    $elements = $this->getElements($yamlform, $export_options);
+    $elements = $this->getElements($export_options);
 
     // Convert tabs delimiter.
     if ($export_options['delimiter'] == '\t') {
@@ -459,19 +474,24 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
     }
 
     // Build header and add to CSV.
-    $this->writeHeader($yamlform, $field_definitions, $elements, $export_options);
+    $this->writeHeader($field_definitions, $elements, $export_options);
 
     // Build records and add to CSV.
-    $entity_ids = $this->getQuery($yamlform, $export_options)->execute();
+    $entity_ids = $this->getQuery($export_options)->execute();
     $yamlform_submissions = YamlFormSubmission::loadMultiple($entity_ids);
-    $this->writeRecords($yamlform, $yamlform_submissions, $field_definitions, $elements, $export_options);
+    $this->writeRecords($yamlform_submissions, $field_definitions, $elements, $export_options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function writeHeader(YamlFormInterface $yamlform, array $field_definitions, array $elements, array $export_options) {
-    $file_path = $this->getFilePath($yamlform, $export_options);
+  public function writeHeader(array $field_definitions, array $elements, array $export_options) {
+    // If building a new archive make sure to delete the exist archive.
+    if ($this->isArchive($export_options)) {
+      @unlink($this->getArchiveFilePath($export_options));
+    }
+
+    $file_path = $this->getCsvFilePath($export_options);
 
     $handle = fopen($file_path, 'w');
     $header = $this->buildHeader($field_definitions, $elements, $export_options);
@@ -482,15 +502,46 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function writeRecords(YamlFormInterface $yamlform, array $yamlform_submissions, array $field_definitions, array $elements, array $export_options) {
-    $file_path = $this->getFilePath($yamlform, $export_options);
+  public function writeRecords(array $yamlform_submissions, array $field_definitions, array $elements, array $export_options) {
+    $yamlform = $this->getYamlForm();
 
+    $is_archive = $this->isArchive($export_options);
+    if ($is_archive) {
+      $files_directory = drupal_realpath('public://yamlform/' . $yamlform->id());
+      $files = [];
+    }
+
+    $file_path = $this->getCsvFilePath($export_options);
     $handle = fopen($file_path, 'a');
     foreach ($yamlform_submissions as $yamlform_submission) {
+      if ($is_archive && file_exists($files_directory . '/' . $yamlform_submission->id())) {
+        $files[] = $files_directory . '/' . $yamlform_submission->id();
+      }
+
       $record = $this->buildRecord($yamlform_submission, $field_definitions, $elements, $export_options);
       fputcsv($handle, $record, $export_options['delimiter']);
     }
     fclose($handle);
+
+    if ($is_archive && $files) {
+      $archiver = new ArchiveTar($this->getArchiveFilePath($export_options), 'gz');
+      $archiver->addModify($files, $this->getBaseFileName(), $files_directory);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function writeCsvToArchive(array $export_options) {
+    $yamlform = $this->getYamlForm();
+
+    $csv_file_path = $this->getCsvFilePath($export_options);
+    $archive_file_path = $this->getArchiveFilePath($export_options);
+
+    $archiver = new ArchiveTar($archive_file_path, 'gz');
+    $archiver->addModify($csv_file_path, $this->getBaseFileName(), $this->getFileTempDirectory());
+
+    @unlink($csv_file_path);
   }
 
   /****************************************************************************/
@@ -524,7 +575,8 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function getElements(YamlFormInterface $yamlform, array $export_options) {
+  public function getElements(array $export_options) {
+    $yamlform = $this->getYamlForm();
     $element_columns = $yamlform->getElementsFlattenedAndHasValue();
     return array_diff_key($element_columns, $export_options['excluded_columns']);
   }
@@ -532,11 +584,14 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function getQuery(YamlFormInterface $yamlform, array $export_options) {
+  public function getQuery(array $export_options) {
+    $yamlform = $this->getYamlForm();
+    $source_entity = $this->getSourceEntity();
+
     $query = $this->queryFactory->get('yamlform_submission')->condition('yamlform_id', $yamlform->id());
 
     // Filter by source entity or submitted to.
-    if ($source_entity = $this->getSourceEntity()) {
+    if ($source_entity) {
       $query->condition('entity_type', $source_entity->getEntityTypeId());
       $query->condition('entity_id', $source_entity->id());
     }
@@ -620,6 +675,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
       // use YamlFormElement::buildExportHeader(array $element, $export_options).
       $element = [
         '#type' => ($field_definition['type'] == 'entity_reference') ? 'entity_autocomplete' : 'element',
+        '#admin_title' => '',
         '#title' => (string) $field_definition['title'],
         '#yamlform_key' => (string) $field_definition['name'],
       ];
@@ -739,7 +795,7 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
 
     $this->elementTypes = [];
     $elements = $this->yamlform->getElementsDecodedAndFlattened();
-    // Alway include 'entity_autocomplete' export settings which is used to
+    // Always include 'entity_autocomplete' export settings which is used to
     // expand a YAML form submission's entity references.
     $this->elementTypes['entity_autocomplete'] = 'entity_autocomplete';
     foreach ($elements as $element) {
@@ -758,8 +814,8 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function getTotal(YamlFormInterface $yamlform, array $export_options) {
-    return $this->getQuery($yamlform, $export_options)->count()->execute();
+  public function getTotal(array $export_options) {
+    return $this->getQuery($export_options)->count()->execute();
   }
 
   /**
@@ -772,15 +828,8 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function requiresBatch(YamlFormInterface $yamlform) {
-    return ($this->getTotal($yamlform, $this->getDefaultExportOptions()) > $this->getBatchLimit()) ? TRUE : FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFilePath(YamlFormInterface $yamlform, array $export_options) {
-    return $this->getFileTempDirectory() . '/' . $this->getFileName($yamlform, $export_options);
+  public function requiresBatch() {
+    return ($this->getTotal($this->getDefaultExportOptions()) > $this->getBatchLimit()) ? TRUE : FALSE;
   }
 
   /**
@@ -793,18 +842,64 @@ class YamlFormSubmissionExporter implements YamlFormSubmissionExporterInterface 
   /**
    * {@inheritdoc}
    */
-  public function getFileName(YamlFormInterface $yamlform, array $export_options) {
+  protected function getBaseFileName() {
+    $yamlform = $this->getYamlForm();
+    $source_entity = $this->getSourceEntity();
+    if ($source_entity) {
+      return $yamlform->id() . '.' . $source_entity->getEntityTypeId() . '.' . $source_entity->id();
+    }
+    else {
+      return $yamlform->id();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCsvFilePath(array $export_options) {
+    return $this->getFileTempDirectory() . '/' . $this->getCsvFileName($export_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCsvFileName(array $export_options) {
     switch ($export_options['delimiter']) {
       case '\t':
       case "\t":
-        $extension = 'tsv';
-        break;
+        return $this->getBaseFileName() . '.tsv';
 
       default:
-        $extension = 'csv';
-        break;
+        return $this->getBaseFileName() . '.csv';
     }
-    return $yamlform->id() . '.' . $extension;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getArchiveFilePath(array $export_options) {
+    return $this->getFileTempDirectory() . '/' . $this->getArchiveFileName($export_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getArchiveFileName(array $export_options) {
+    return $this->getBaseFileName() . '.tar.gz';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isArchive(array $export_options) {
+    return ($export_options['download'] && $export_options['files']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isBatch(array $export_options) {
+    return ($this->isArchive($export_options) || ($this->getTotal($export_options) >= $this->getBatchLimit()));
   }
 
 }

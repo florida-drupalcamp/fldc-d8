@@ -29,6 +29,18 @@ batch:
   default_batch_update_size: 500
   default_batch_delete_size: 500
 elements:
+  wrapper_classes: |
+    container-inline clearfix
+    form--inline clearfix
+    messages messages--error
+    messages messages--warning
+    messages messages--status
+  classes: |
+    container-inline clearfix
+    form--inline clearfix
+    messages messages--error
+    messages messages--warning
+    messages messages--status
   allowed_tags: admin
   default_description_display: ''
   default_max_filesize: ''
@@ -56,7 +68,7 @@ mail:
   default_body_text: |
     Submitted on [yamlform-submission:created]
     Submitted by: [yamlform-submission:user]
-
+    
     Submitted values are:
     [yamlform-submission:values]
   default_body_html: |

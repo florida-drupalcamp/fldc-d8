@@ -22,7 +22,7 @@ elements: |
       '#description': 'Add <code>#private: true</code> property to an element to only show the element to users with results access.'
       '#private': true
     autocomplete:
-      '#type': textfield
+      '#type': autocomplete
       '#title': 'Autocomplete'
       '#description': 'Provide autocompletiong using predefined, submitted, or custom options.'
       '#autocomplete_options': 'country_names'
@@ -287,6 +287,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

@@ -136,11 +136,26 @@ trait YamlFormTestTrait {
    */
   protected function postSubmission(YamlFormInterface $yamlform, array $edit = [], $submit = NULL) {
     $submit = $submit ?: t('Submit');
-
-    // Post a new submission.
     $this->drupalPostForm('yamlform/' . $yamlform->id(), $edit, $submit);
+    return $this->getLastSubmissionId($yamlform);
+  }
 
-    // Get the last submission id.
+  /**
+   * Post a new test submission to a YAML form.
+   *
+   * @param \Drupal\yamlform\YamlFormInterface $yamlform
+   *   A YAML form.
+   * @param array $edit
+   *   Submission values.
+   * @param string $submit
+   *   Value of the submit button whose click is to be emulated.
+   *
+   * @return int $sid
+   *   The created test submission's sid.
+   */
+  protected function postSubmissionTest(YamlFormInterface $yamlform, array $edit = [], $submit = NULL) {
+    $submit = $submit ?: t('Submit');
+    $this->drupalPostForm('yamlform/' . $yamlform->id() . '/test', $edit, $submit);
     return $this->getLastSubmissionId($yamlform);
   }
 

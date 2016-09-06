@@ -206,6 +206,18 @@ interface YamlFormHandlerInterface extends PluginInspectionInterface, Configurab
   public function submitForm(array &$form, FormStateInterface $form_state, YamlFormSubmissionInterface $yamlform_submission);
 
   /**
+   * Confirm YAML form submission form.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   * @param \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission
+   *   A YAML form submission.
+   */
+  public function confirmForm(array &$form, FormStateInterface $form_state, YamlFormSubmissionInterface $yamlform_submission);
+
+  /**
    * Changes the values of an entity before it is created.
    *
    * @param mixed[] $values

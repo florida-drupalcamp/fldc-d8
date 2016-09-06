@@ -1,0 +1,231 @@
+langcode: en
+status: true
+dependencies: {  }
+uid: null
+template: false
+id: test_element_flexbox
+title: 'Test: Element: Flexbox'
+description: 'Test flexbox layout.'
+elements: |
+  flexbox_name:
+    '#type': flexbox
+    title:
+      '#type': textfield
+      '#title': 'Title'
+    first_name:
+      '#type': textfield
+      '#title': 'First name'
+      '#flex': 3
+    middle_name:
+      '#type': textfield
+      '#title': 'Middle name'
+      '#flex': 3
+    last_name:
+      '#type': textfield
+      '#title': 'Last name'
+      '#flex': 5
+    suffix:
+      '#type': textfield
+      '#title': 'Suffix'
+  flexbox_inputs:
+    '#type': flexbox
+    textfield:
+      '#type': textfield
+      '#title': 'textfield'
+    password:
+      '#type': password
+      '#title': 'password'
+    select:
+      '#type': select
+      '#title': 'select'
+      '#options':
+        1: one
+        2: two
+        3: three
+
+  flexbox_properites:
+    '#type': flexbox
+    properties_number_from:
+      '#type': number
+      '#title': 'currency'
+      '#description': 'A description'
+      '#field_prefix': '$'
+      '#field_suffix': '.00'
+    properties_number_to:
+      '#type': number
+      '#title': 'currency'
+      '#description': 'A description'
+      '#field_prefix': '$'
+      '#field_suffix': '.00'
+    properties_textfield:
+      '#type': textfield
+      '#title': 'textfield'
+      '#description': 'A description'
+
+  flexbox_rows:
+    '#type': flexbox
+    textarea:
+      '#type': textarea
+      '#title': 'textarea'
+    select_multiple:
+      '#type': select
+      '#title': 'select_multiple'
+      '#multiple': true
+      '#options':
+        1: one
+        2: two
+        3: three
+    checkboxes:
+      '#type': checkboxes
+      '#title': 'checkboxes'
+      '#options':
+        1: one
+        2: two
+        3: three
+
+  flexbox_checkboxes:
+    '#type': flexbox
+    checkboxes_textfield:
+      '#type': textfield
+      '#title': 'textfield'
+    checkboxes_horizontal:
+      '#type': checkboxes
+      '#title': 'checkboxes_horizontal'
+      '#options_display': side_by_side
+      '#options':
+        one: One
+        two: Two
+        three: Three
+
+  flexbox_radios:
+    '#type': flexbox
+    radios_textfield:
+      '#type': textfield
+      '#title': 'textfield'
+    radios_horizontal:
+      '#type': radios
+      '#title': 'radios_horizontal'
+      '#options_display': side_by_side
+      '#options':
+        one: One
+        two: Two
+        three: Three
+        four: Four
+        five: Five
+        six: Six
+
+  flexbox_toggle:
+    '#type': flexbox
+    '#align_items': flex-end
+    toggle:
+      '#type': toggle
+      '#title': 'toggle'
+    toggle_textfield:
+      '#type': textfield
+      '#title': 'textfield'
+      '#flex': 8
+    toggle_rating:
+      '#type': rating
+      '#title': 'rating'
+
+  flexbox_date:
+    '#type': flexbox
+    '#align_items': center
+    date:
+      '#type': date
+      '#title': 'date'
+      '#format': 'l, F j, Y'
+      '#default_value': '2009-08-18'
+      '#flex': 4
+    to:
+      '#markup': '- to - '
+    datetime:
+      '#type': datetime
+      '#title': 'datetime'
+      '#format': 'l, F j, Y - g:i A'
+      '#default_value': '2009-08-18T01:00:00-05:00'
+      '#flex': 4
+
+  flexbox_datelist:
+    '#type': flexbox
+    datelist:
+      '#type': datelist
+      '#title': 'datelist'
+      '#date_part_order':
+        - month
+        - day
+        - year
+        - hour
+        - minute
+        - second
+        - ampm
+      '#format': 'l, F j, Y - g:i A'
+      '#default_value': '2009-08-18T01:00:00-05:00'
+settings:
+  page: true
+  page_submit_path: ''
+  page_confirm_path: ''
+  form_submit_label: ''
+  form_exception_message: ''
+  form_closed_message: ''
+  form_confidential: false
+  form_confidential_message: ''
+  form_prepopulate: false
+  form_prepopulate_source_entity: false
+  form_novalidate: false
+  form_autofocus: false
+  wizard_progress_bar: true
+  wizard_progress_pages: false
+  wizard_progress_percentage: false
+  wizard_next_button_label: ''
+  wizard_prev_button_label: ''
+  wizard_start_label: ''
+  wizard_complete: true
+  wizard_complete_label: ''
+  preview: 0
+  preview_next_button_label: ''
+  preview_prev_button_label: ''
+  preview_message: ''
+  draft: false
+  draft_auto_save: false
+  draft_button_label: ''
+  draft_saved_message: ''
+  draft_loaded_message: ''
+  confirmation_type: page
+  confirmation_message: ''
+  confirmation_url: ''
+  limit_total: null
+  limit_total_message: ''
+  limit_user: null
+  limit_user_message: ''
+  entity_limit_total: null
+  entity_limit_user: null
+  results_disabled: false
+access:
+  create:
+    roles:
+      - anonymous
+      - authenticated
+    users: {  }
+  view_any:
+    roles: {  }
+    users: {  }
+  update_any:
+    roles: {  }
+    users: {  }
+  delete_any:
+    roles: {  }
+    users: {  }
+  purge_any:
+    roles: {  }
+    users: {  }
+  view_own:
+    roles: {  }
+    users: {  }
+  update_own:
+    roles: {  }
+    users: {  }
+  delete_own:
+    roles: {  }
+    users: {  }
+handlers: {  }

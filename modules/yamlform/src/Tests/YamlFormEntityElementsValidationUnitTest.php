@@ -95,8 +95,8 @@ duplicate:
   '#tree': true
   '#submit' : 'function_name'",
         'messages' => [
-          'Elements contain a unsupported <em class="placeholder">#tree</em> property found on line 2.',
-          'Elements contain a unsupported <em class="placeholder">#submit</em> property found on line 3.',
+          'Elements contain an unsupported <em class="placeholder">#tree</em> property found on line 2.',
+          'Elements contain an unsupported <em class="placeholder">#submit</em> property found on line 3.',
         ],
       ],
 

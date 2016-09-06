@@ -30,14 +30,20 @@ class YamlFormLikert extends YamlFormElementBase {
     return [
       'title' => '',
       'description' => '',
+
       'required' => FALSE,
       'default_value' => '',
+
       'title_display' => '',
       'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
+
+      'admin_title' => '',
       'private' => FALSE,
+
       'format' => $this->getDefaultFormat(),
+
+      'flex' => 1,
+
       'questions' => [],
       'questions_randomize' => FALSE,
       'answers' => [],
@@ -62,12 +68,11 @@ class YamlFormLikert extends YamlFormElementBase {
   public function formatHtml(array &$element, $value, array $answers = []) {
     $format = $this->getFormat($element);
     switch ($format) {
-      case 'list':
+      case 'raw':
         $items = [];
         foreach ($element['#questions'] as $question_key => $question_label) {
           $answer_value = (isset($value[$question_key])) ? $value[$question_key] : NULL;
-          $answer_text = ($answer_value) ? YamlFormOptionsHelper::getOptionText($answer_value, $element['#answers']) : $this->t('[blank]');
-          $items[$question_key] = ['#markup' => "<b>$question_label:</b> $answer_text"];
+          $items[$question_key] = ['#markup' => "<b>$question_key:</b> $answer_value"];
         }
         return [
           '#theme' => 'item_list',
@@ -122,7 +127,19 @@ class YamlFormLikert extends YamlFormElementBase {
         ];
 
       default:
-        return parent::formatHtml($element, $value, $answers);
+      case 'value':
+      case 'list':
+        $items = [];
+        foreach ($element['#questions'] as $question_key => $question_label) {
+          $answer_value = (isset($value[$question_key])) ? $value[$question_key] : NULL;
+          $answer_text = ($answer_value) ? YamlFormOptionsHelper::getOptionText($answer_value, $element['#answers']) : $this->t('[blank]');
+          $items[$question_key] = ['#markup' => "<b>$question_label:</b> $answer_text"];
+        }
+        return [
+          '#theme' => 'item_list',
+          '#items' => $items,
+        ];
+
     }
   }
 
@@ -137,6 +154,16 @@ class YamlFormLikert extends YamlFormElementBase {
 
     $format = $this->getFormat($element);
     switch ($format) {
+      case 'raw':
+        $list = [];
+        foreach ($element['#questions'] as $question_key => $question_label) {
+          $answer_value = (isset($value[$question_key])) ? $value[$question_key] : NULL;
+          $list[] = "$question_key: $answer_value";
+        }
+        return implode("\n", $list);
+
+      default:
+      case 'value':
       case 'table':
       case 'list':
         $list = [];
@@ -147,8 +174,6 @@ class YamlFormLikert extends YamlFormElementBase {
         }
         return implode("\n", $list);
 
-      default:
-        return parent::formatText($element, $value, $answers);
     }
   }
 
@@ -269,7 +294,7 @@ class YamlFormLikert extends YamlFormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function formatTableColumn(array &$element, $value, array $options = []) {
+  public function formatTableColumn(array $element, $value, array $options = []) {
     if (isset($options['question_key'])) {
       $question_key = $options['question_key'];
       $question_value = (isset($value[$question_key])) ? $value[$question_key] : '';

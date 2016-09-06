@@ -9,3 +9,7 @@
 .yamlform-submission-form th.select-all {
   width: 1px;
 }
+
+.form-item .container-inline {
+  margin: 2px 0;
+}

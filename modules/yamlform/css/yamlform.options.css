@@ -31,6 +31,6 @@
   .yamlform-options-display-two-columns div.form-item,
   .yamlform-options-display-three-columns div.form-item {
     margin-top: 0;
-    margin-bottom: 0.8em;
+    margin-bottom: 0;
   }
 }

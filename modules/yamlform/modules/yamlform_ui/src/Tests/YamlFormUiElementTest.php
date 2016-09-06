@@ -125,7 +125,7 @@ class YamlFormUiElementTest extends YamlFormTestBase {
     $this->assertRaw('<a href="' . $base_path . 'admin/structure/yamlform/manage/contact/element/test/edit?type=url" class="use-ajax" data-dialog-type="modal" data-dialog-options="{&quot;width&quot;:800}">Change</a>');
 
     // Check change element type.
-    $this->drupalGet('admin/structure/yamlform/manage/contact/element/test/edit' , ['query' => ['type' => 'value']]);
+    $this->drupalGet('admin/structure/yamlform/manage/contact/element/test/edit', ['query' => ['type' => 'value']]);
     // Check value has not description.
     $this->assertNoRaw(t('A short description of the element used as help for the user when he/she uses the form.'));
     $this->assertRaw('Value<a href="' . $base_path . 'admin/structure/yamlform/manage/contact/element/test/edit" class="button button--small use-ajax" data-dialog-type="modal" data-dialog-options="{&quot;width&quot;:800}" data-drupal-selector="edit-cancel" id="edit-cancel">Cancel</a>');
@@ -156,7 +156,7 @@ class YamlFormUiElementTest extends YamlFormTestBase {
     // the element's render array has not be altered.
     // This verifies that the edit element form it not expectedly altering
     // an elements render array.
-    $yamlform_ids = ['example_elements', 'test_element_extras'];
+    $yamlform_ids = ['example_elements', 'example_layout_basic', 'test_element_extras'];
     foreach ($yamlform_ids as $yamlform_id) {
       /** @var \Drupal\yamlform\YamlFormInterface $yamlform_elements */
       $yamlform_elements = YamlForm::load($yamlform_id);

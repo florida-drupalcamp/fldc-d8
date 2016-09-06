@@ -13,6 +13,8 @@ class YamlFormSubmissionListBuilderTest extends YamlFormTestBase {
    * Tests results.
    */
   public function testResults() {
+    global $base_path;
+
     /** @var \Drupal\yamlform\YamlFormInterface $yamlform */
     /** @var \Drupal\yamlform\YamlFormSubmissionInterface[] $submissions */
     list($yamlform, $submissions) = $this->createYamlFormWithSubmissions();
@@ -85,7 +87,7 @@ class YamlFormSubmissionListBuilderTest extends YamlFormTestBase {
       'limit' => 20,
     ];
     $this->drupalPostForm('admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table/custom', $edit, t('Save'));
-    $this->assertRaw('The customized columns and results per page limit have been saved.');
+    $this->assertRaw('The customized table has been saved.');
 
     // Check that sid is hidden and changed is visible.
     $this->drupalGet('admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table');
@@ -107,6 +109,36 @@ class YamlFormSubmissionListBuilderTest extends YamlFormTestBase {
     $this->assertNoRaw($submissions[1]->getData('first_name'));
     $this->assertRaw($submissions[2]->getData('first_name'));
     $this->assertRaw('<nav class="pager" role="navigation" aria-labelledby="pagination-heading">');
+
+    // Reset the limit to 20.
+    $yamlform->setState('results.custom.limit', 20);
+
+    // Check Header label and element value display.
+    $this->drupalGet('admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table');
+
+    // Check user header and value.
+    $this->assertRaw('<a href="' . $base_path . 'admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table?sort=asc&amp;order=User" title="sort by User">User</a>');
+    $this->assertRaw('<td class="priority-medium">' . $this->normalUser->getAccountName() . '</td>');
+
+    // Check date of birth.
+    $this->assertRaw('<th specifier="element__dob"><a href="' . $base_path . 'admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table?sort=asc&amp;order=Date%20of%20birth" title="sort by Date of birth">Date of birth</a></th>');
+    $this->assertRaw('<td>Sunday, October 26, 1947</td>');
+
+    // Display Header key and element raw.
+    $yamlform->setState('results.custom.format', [
+      'header_format' => 'key',
+      'element_format' => 'raw',
+    ]);
+
+    $this->drupalGet('admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table');
+
+    // Check user header and value.
+    $this->assertRaw('<a href="' . $base_path . 'admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table?sort=asc&amp;order=uid" title="sort by uid">uid</a>');
+    $this->assertRaw('<td class="priority-medium">' . $this->normalUser->id() . '</td>');
+
+    // Check date of birth.
+    $this->assertRaw('<th specifier="element__dob"><a href="' . $base_path . 'admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table?sort=asc&amp;order=dob" title="sort by dob">dob</a></th>');
+    $this->assertRaw('<td>Sun, 26 Oct 1947 00:00:00 +1000am0</td>');
   }
 
 }

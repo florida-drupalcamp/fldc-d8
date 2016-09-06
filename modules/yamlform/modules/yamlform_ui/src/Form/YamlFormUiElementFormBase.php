@@ -14,9 +14,9 @@ use Drupal\yamlform\YamlFormInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a base form for YAML form elements.
+ * Provides a base class for YAML form element forms.
  */
-abstract class YamlFormUiElementFormBase extends FormBase {
+abstract class YamlFormUiElementFormBase extends FormBase implements YamlFormUiElementFormInterface {
 
   use YamlFormDialogTrait;
 
@@ -117,12 +117,25 @@ abstract class YamlFormUiElementFormBase extends FormBase {
       '#disabled' => $key,
       '#required' => TRUE,
     ];
+
     // Remove the key's help text (aka description) once it has been set.
     if ($key) {
       $form['key']['#description'] = NULL;
     }
 
     $form['properties'] = $yamlform_element->buildConfigurationForm([], $form_state);
+
+    // Move messages to the top of the form.
+    if (isset($form['properties']['messages'])) {
+      $form['messages'] = $form['properties']['messages'];
+      $form['messages']['#weight'] = -100;
+      unset($form['properties']['messages']);
+    }
+
+    // Hide #flex property if parent element is not a 'yamlform_flexbox'.
+    if (isset($form['properties']['flex']) && !$this->isParentElementFlexbox($key, $parent_key)) {
+      $form['properties']['flex']['#access'] = FALSE;
+    }
 
     // Add type to the general details.
     $form['properties']['general']['type'] = [
@@ -268,23 +281,52 @@ abstract class YamlFormUiElementFormBase extends FormBase {
   }
 
   /**
-   * Return the YAML form associated with this form.
-   *
-   * @return \Drupal\yamlform\YamlFormInterface
-   *   A YAML form
+   * {@inheritdoc}
+   */
+  public function isNew() {
+    return ($this instanceof YamlFormUiElementAddForm) ? TRUE : FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getYamlForm() {
     return $this->yamlform;
   }
 
   /**
-   * Return the YAML form element associated with this form.
-   *
-   * @return \Drupal\yamlform\YamlFormElementInterface
-   *   A YAML form element.
+   * {@inheritdoc}
    */
   public function getYamlFormElement() {
     return $this->elementManager->getElementInstance($this->element);
+  }
+
+  /**
+   * Determine if the parent element is a 'yamlform_flexbox'.
+   *
+   * @param string|null $key
+   *   The element's key. Only applicable for existing elements.
+   * @param string|null $parent_key
+   *   The element's parent key. Only applicable for new elements.
+   *   Parent key is set via query string parameter. (?parent={parent_key})
+   *
+   * @return bool
+   *   TRUE if the parent element is a 'yamlform_flexbox'.
+   */
+  protected function isParentElementFlexbox($key = NULL, $parent_key = NULL) {
+    $elements = $this->yamlform->getElementsInitializedAndFlattened();
+
+    // Check the element #yamlform_parent_flexbox property.
+    if ($key && isset($elements[$key])) {
+      return $elements[$key]['#yamlform_parent_flexbox'];
+    }
+
+    // Check the parent element #type.
+    if ($parent_key && isset($elements[$parent_key]) && isset($elements[$parent_key]['#type'])) {
+      return ($elements[$parent_key]['#type'] == 'yamlform_flexbox') ? TRUE : FALSE;
+    }
+
+    return FALSE;
   }
 
 }

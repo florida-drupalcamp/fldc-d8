@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\yamlform\Entity\YamlForm;
 use Drupal\yamlform\Utility\YamlFormArrayHelper;
+use Drupal\yamlform\Utility\YamlFormElementHelper;
 
 /**
  * Defines a class to validate YAML form elements.
@@ -213,9 +214,8 @@ class YamlFormEntityElementsValidator {
    *   If not valid an error message.
    */
   protected function validateProperties() {
-    $ignored_properties = [];
-    $this->getIgnoredPropertiesRecursive($this->elements, $ignored_properties);
-    if ($ignored_properties = array_filter($ignored_properties)) {
+    $ignored_properties = YamlFormElementHelper::getIgnoredProperties($this->elements);
+    if ($ignored_properties) {
       $messages = [];
       foreach ($ignored_properties as $ignored_property) {
         $line_numbers = $this->getLineNumbers('/^\s*(["\']?)' . preg_quote($ignored_property, '/') . '\1\s*:/');
@@ -224,31 +224,11 @@ class YamlFormEntityElementsValidator {
           '@lines' => $this->formatPlural(count($line_numbers), $this->t('line'), $this->t('lines')),
           '@line_numbers' => YamlFormArrayHelper::toString($line_numbers),
         ];
-        $messages[] = $this->t('Elements contain a unsupported %property property found on @lines @line_numbers.', $t_args);
+        $messages[] = $this->t('Elements contain an unsupported %property property found on @lines @line_numbers.', $t_args);
       }
       return $messages;
     }
     return NULL;
-  }
-
-  /**
-   * Recurse through elements and collect an associative array of ignored properties.
-   *
-   * @param array $elements
-   *   An array of elements.
-   * @param array $properties
-   *   An array tracking ignored properties.
-   */
-  protected function getIgnoredPropertiesRecursive(array $elements, array &$properties) {
-    $ignored_properties = YamlForm::getIgnoredProperties();
-    foreach ($elements as $key => &$element) {
-      if (Element::property($key) || !is_array($element)) {
-        continue;
-      }
-
-      $properties += array_intersect_key($ignored_properties, $element);
-      $this->getIgnoredPropertiesRecursive($element, $properties);
-    }
   }
 
   /**

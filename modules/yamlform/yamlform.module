@@ -405,7 +405,7 @@ function yamlform_theme() {
   // Since any rendering of a YAML form is going to require 'yamlform.theme.inc'
   // we are going to just add it to every template.
   foreach ($info as &$template) {
-    $template['file'] = 'yamlform.theme.inc';
+    $template['file'] = 'includes/yamlform.theme.inc';
   }
 
   return $info;
@@ -468,7 +468,7 @@ function yamlform_preprocess_checkboxes(&$variables) {
 /**
  * Prepares variables for radios templates.
  *
- * \Drupal\yamlform\Plugin\YamlFormElement\OptionsBase
+ * @see \Drupal\yamlform\Plugin\YamlFormElement\OptionsBase
  */
 function yamlform_preprocess_radios(&$variables) {
   yamlform_preprocess_checkboxes($variables);
@@ -513,7 +513,6 @@ function _yamlform_entity_element_validate_rendering_error_handler($error_level,
     _drupal_error_handler($message, $message, $filename, $line, $context);
   }
 }
-
 
 /**
  * Implements hook_query_alter().

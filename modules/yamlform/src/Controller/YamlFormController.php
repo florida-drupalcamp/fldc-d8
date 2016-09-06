@@ -88,14 +88,14 @@ class YamlFormController extends ControllerBase implements ContainerInjectionInt
     }
 
     /** @var \Drupal\yamlform\YamlFormSubmissionInterface $yamlform_submission */
+    $yamlform_submission = NULL;
+
     if ($token = $request->get('token')) {
       /** @var \Drupal\yamlform\YamlFormSubmissionStorageInterface $yamlform_submission_storage */
       $yamlform_submission_storage = $this->entityTypeManager()->getStorage('yamlform_submission');
-      $entities = $yamlform_submission_storage->loadByProperties(['token' => $token]);
-      $yamlform_submission = reset($entities);
-    }
-    else {
-      $yamlform_submission = NULL;
+      if ($entities = $yamlform_submission_storage->loadByProperties(['token' => $token])) {
+        $yamlform_submission = reset($entities);
+      }
     }
 
     $settings = $yamlform->getSettings();

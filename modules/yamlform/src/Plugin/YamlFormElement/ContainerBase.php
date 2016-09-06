@@ -17,10 +17,17 @@ abstract class ContainerBase extends YamlFormElementBase {
     return [
       'title' => '',
       'description' => '',
+
       'required' => FALSE,
       'title_display' => '',
-      'prefix' => '',
-      'suffix' => '',
+
+      'attributes__class' => '',
+      'attributes__style' => '',
+
+      'admin_title' => '',
+      'private' => FALSE,
+
+      'flex' => 1,
     ];
   }
 

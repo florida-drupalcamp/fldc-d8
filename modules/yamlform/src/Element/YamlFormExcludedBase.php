@@ -101,7 +101,7 @@ abstract class YamlFormExcludedBase extends FormElement {
       }
 
       $options[$key] = [
-        ['title' => isset($element['#title']) ? $element['#title'] : $key],
+        ['title' => $element['#admin_title'] ?:$element['#title'] ?: $key],
         ['name' => $key],
         ['type' => isset($element['#type']) ? $element['#type'] : ''],
       ];

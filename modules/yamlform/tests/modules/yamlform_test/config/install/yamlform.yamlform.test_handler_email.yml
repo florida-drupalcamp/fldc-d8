@@ -31,7 +31,7 @@ elements: |
     '#title': 'Message'
     '#type': textarea
     '#required': true
-    '#default_value': default
+    '#default_value': '{message}'
 settings:
   page: true
   page_submit_path: ''
@@ -42,6 +42,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true
@@ -109,7 +110,7 @@ handlers:
       to_mail: to@example.com
       cc_mail: cc@example.com
       bcc_mail: bcc@example.com
-      from_mail: '[yamlform-submission:values:email:value]'
+      from_mail: '[yamlform-submission:values:email:raw]'
       from_name: '[yamlform-submission:values:first_name] [yamlform-submission:values:last_name]'
       subject: '[yamlform-submission:values:subject:value]'
       body: default

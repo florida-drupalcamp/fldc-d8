@@ -189,7 +189,7 @@ class YamlFormSubmissionViewBuilder extends EntityViewBuilder implements YamlFor
       /** @var \Drupal\yamlform\YamlFormElementInterface $yamlform_element */
       $yamlform_element = $this->yamlFormElementManager->createInstance($plugin_id);
 
-      $title = $element['#title'] ?: '(' . $key . ')';
+      $title = $element['#admin_title'] ?: $element['#title'] ?: '(' . $key . ')';
       $value = (isset($data[$key])) ? $yamlform_element->formatHtml($element, $data[$key], $options) : '';
       $rows[] = [
         [
@@ -206,7 +206,7 @@ class YamlFormSubmissionViewBuilder extends EntityViewBuilder implements YamlFor
       '#type' => 'table',
       '#rows' => $rows,
       '#attributes' => [
-        'class' => 'yamlform-submission__table',
+        'class' => ['yamlform-submission__table'],
       ],
     ];
   }

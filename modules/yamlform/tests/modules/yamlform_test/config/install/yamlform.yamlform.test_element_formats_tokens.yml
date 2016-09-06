@@ -28,6 +28,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true
@@ -105,6 +106,7 @@ handlers:
         <h3>and:</h3>[yamlform-submission:values:checkboxes:and]<hr/>
         <h3>ul:</h3>[yamlform-submission:values:checkboxes:ul]<hr/>
         <h3>ol:</h3>[yamlform-submission:values:checkboxes:ol]<hr/>
+        <h3>raw:</h3>[yamlform-submission:values:checkboxes:raw]<hr/>
       excluded_elements: {  }
       html: true
       attachments: false
@@ -125,21 +127,24 @@ handlers:
       body: |
         default:
         [yamlform-submission:values:checkboxes]
-        
+
         comma:
         [yamlform-submission:values:checkboxes:comma]
-        
+
         semicolon:
         [yamlform-submission:values:checkboxes:semicolon]
-        
+
         and:
         [yamlform-submission:values:checkboxes:and]
-        
+
         ul:
         [yamlform-submission:values:checkboxes:ul]
-        
+
         ol:
         [yamlform-submission:values:checkboxes:ol]
+
+        raw:
+        [yamlform-submission:values:checkboxes:raw]
       excluded_elements: {  }
       html: false
       attachments: false

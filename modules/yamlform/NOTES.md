@@ -64,6 +64,7 @@ Tidy YAML files
     export SIMPLETEST_DB=mysql://drupal_d8_dev:drupal.@dm1n@localhost/drupal_d8_dev;
     php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/tests/src/Unit/YamlFormTidyTest.php
     php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/tests/src/Unit/YamlFormHelperTest.php
+    php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/tests/src/Unit/YamlFormElementHelperTest.php
     php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/tests/src/Unit/YamlFormOptionsHelperTest.php
     php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/tests/src/Unit/YamlFormArrayHelperTest.php     
     php ../vendor/phpunit/phpunit/phpunit ../modules/sandbox/yamlform/src/Tests/YamlFormEntityElementsValidationUnitTest.php    
@@ -98,14 +99,12 @@ Tidy YAML files
      drush readme-export --project --path='docs/index.md' yamlform
      open https://www.drupal.org/node/2640714/edit
      
-     # Update roadmap
-     drush readme-export --project --path='docs/roadmap.md' yamlform
-     open https://www.drupal.org/node/2765691/edit
-
 [Edit project page](https://www.drupal.org/node/2640714/edit)
 
 
 7. Update documentation
 -----------------------
+
+[Update Roadmap](http://yamlform.io/developers/roadmap/)
 
      npm install; grunt docs-deploy;

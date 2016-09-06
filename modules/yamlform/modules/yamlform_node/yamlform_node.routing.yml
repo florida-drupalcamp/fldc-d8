@@ -4,71 +4,7 @@ entity.node.yamlform.confirmation:
     _controller: '\Drupal\yamlform\Controller\YamlFormController::confirmation'
     _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
     operation: view
-  options:
-    parameters:
-      node:
-        type: 'entity:node'
-  requirements:
-    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
-
-entity.node.yamlform.results_submissions:
-  path: '/node/{node}/yamlform/results/submissions'
-  defaults:
-    _entity_list: 'yamlform_submission'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
-    operation: yamlform_submission_view
-  options:
-    parameters:
-      node:
-        type: 'entity:node'
-  requirements:
-    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
-
-entity.node.yamlform.results_table:
-  path: '/node/{node}/yamlform/results/table'
-  defaults:
-    _entity_list: 'yamlform_submission'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
-    operation: yamlform_submission_view
-  options:
-    parameters:
-      node:
-        type: 'entity:node'
-  requirements:
-    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
-
-entity.node.yamlform.results_table.custom:
-  path: '/node/{node}/yamlform/results/table/custom'
-  defaults:
-    _form: 'Drupal\yamlform\Form\YamlFormResultsCustomForm'
-    _title: 'Customize table'
-  options:
-    parameters:
-      node:
-        type: 'entity:node'
-  requirements:
-    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
-
-
-entity.node.yamlform.results_export:
-  path: '/node/{node}/yamlform/results/download'
-  defaults:
-    _controller: '\Drupal\yamlform\Controller\YamlFormResultsExportController::index'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
-    operation: yamlform_submission_view
-  options:
-    parameters:
-      node:
-        type: 'entity:node'
-  requirements:
-    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
-
-entity.node.yamlform.results_clear:
-  path: '/node/{node}/yamlform/results/clear'
-  defaults:
-    _form: 'Drupal\yamlform\Form\YamlFormResultsClearForm'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
-    operation: yamlform_submission_delete
+    entity_access: 'yamlform.submission_create'
   options:
     parameters:
       node:
@@ -81,7 +17,8 @@ entity.node.yamlform.submissions:
   defaults:
     _entity_list: 'yamlform_submission'
     _title: 'Submissions'
-    operation: 'yamlform.submission_view_own'
+    operation: ''
+    entity_access: 'yamlform.submission_view_own'
   options:
     parameters:
       node:
@@ -96,13 +33,97 @@ entity.node.yamlform.test:
     _controller: '\Drupal\yamlform\Controller\YamlFormTestController::testForm'
     _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
     operation: yamlform_submission_view
+    entity_access: 'yamlform.update'
   options:
     parameters:
       node:
         type: 'entity:node'
   requirements:
     _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_submissions:
+  path: '/node/{node}/yamlform/results/submissions'
+  defaults:
+    _entity_list: 'yamlform_submission'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
     operation: yamlform_submission_view
+    entity_access: 'yamlform.submission_view_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_table:
+  path: '/node/{node}/yamlform/results/table'
+  defaults:
+    _entity_list: 'yamlform_submission'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+    operation: yamlform_submission_view
+    entity_access: 'yamlform.submission_view_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_table.custom:
+  path: '/node/{node}/yamlform/results/table/custom'
+  defaults:
+    _form: 'Drupal\yamlform\Form\YamlFormResultsCustomForm'
+    _title: 'Customize table'
+    operation: yamlform_submission_view
+    entity_access: 'yamlform.submission_view_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_export:
+  path: '/node/{node}/yamlform/results/download'
+  defaults:
+    _controller: '\Drupal\yamlform\Controller\YamlFormResultsExportController::index'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+    operation: yamlform_submission_view
+    entity_access: 'yamlform.submission_view_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_export_file:
+  path: '/node/{node}/yamlform/results/download/file/{filename}'
+  defaults:
+    _controller: '\Drupal\yamlform\Controller\YamlFormResultsExportController::file'
+    _title_callback: 'Drupal\yamlform\Controller\YamlFormController::title'
+    operation: yamlform_submission_view
+    entity_access: 'yamlform.submission_view_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
+
+entity.node.yamlform.results_clear:
+  path: '/node/{node}/yamlform/results/clear'
+  defaults:
+    _form: 'Drupal\yamlform\Form\YamlFormResultsClearForm'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+    operation: yamlform_submission_delete
+    entity_access: 'yamlform.submission_purge_any'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+  requirements:
+    _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormAccess'
 
 entity.node.yamlform_submission.canonical:
   path: '/node/{node}/yamlform/submission/{yamlform_submission}'
@@ -111,6 +132,7 @@ entity.node.yamlform_submission.canonical:
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     type: 'default'
     operation: yamlform_submission_view
+    entity_access: 'yamlform_submission.view'
   options:
     parameters:
       node:
@@ -125,6 +147,7 @@ entity.node.yamlform_submission.table:
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     type: 'table'
     operation: yamlform_submission_view
+    entity_access: 'yamlform_submission.view_any'
   options:
     parameters:
       node:
@@ -139,6 +162,7 @@ entity.node.yamlform_submission.text:
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     type: 'text'
     operation: yamlform_submission_view
+    entity_access: 'yamlform_submission.view_any'
   options:
     parameters:
       node:
@@ -153,6 +177,7 @@ entity.node.yamlform_submission.yaml:
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     type: 'yaml'
     operation: yamlform_submission_view
+    entity_access: 'yamlform_submission.view_any'
   options:
     parameters:
       node:
@@ -166,6 +191,7 @@ entity.node.yamlform_submission.edit_form:
     _entity_form: 'yamlform_submission.default'
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     operation: yamlform_submission_edit
+    entity_access: 'yamlform_submission.update'
   options:
     parameters:
       node:
@@ -179,6 +205,7 @@ entity.node.yamlform_submission.notes_form:
     _entity_form: 'yamlform_submission.notes'
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     operation: yamlform_submission_notes
+    entity_access: 'yamlform_submission.update_any'
   options:
     parameters:
       node:
@@ -192,11 +219,13 @@ entity.node.yamlform_submission.resend_form:
     _form: 'Drupal\yamlform\Form\YamlFormSubmissionResendForm'
     _title_callback: 'Drupal\yamlform\Controller\YamlFormSubmissionController::title'
     operation: yamlform_submission_resend
+    entity_access: 'yamlform_submission.update_any'
   options:
     parameters:
       node:
         type: 'entity:node'
   requirements:
+    # @todo check email access.
     _custom_access: '\Drupal\yamlform_node\Access\YamlFormNodeAccess::checkYamlFormSubmissionAccess'
 
 entity.node.yamlform_submission.delete_form:
@@ -205,6 +234,7 @@ entity.node.yamlform_submission.delete_form:
     _entity_form: 'yamlform_submission.delete'
     _title: 'Delete YAML form submission'
     operation: yamlform_submission_delete
+    entity_access: 'yamlform_submission.delete'
   options:
     parameters:
       node:

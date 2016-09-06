@@ -3,8 +3,9 @@
  * Styles for YAML form (select|checkboxes|radios)_other element.
  */
 
-html.js .form-type-yamlform-select-other .form-type-textfield,
-html.js .form-type-yamlform-checkboxes-other .form-type-textfield,
-html.js .form-type-yamlform-radios-other .form-type-textfield {
+
+html.js .form-type-yamlform-select-other .yamlform-select-other-input,
+html.js .form-type-yamlform-checkboxes-other .yamlform-checkboxes-other-input,
+html.js .form-type-yamlform-radios-other .yamlform-radios-other-input {
   display: none;
 }

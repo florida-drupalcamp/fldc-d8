@@ -19,7 +19,7 @@ html.js .form-type-yamlform-toggle label + input + .toggle {
 html.js .toggle {
   display: block;
   float: left;
-  margin-right: .5em;
+  margin: 2px .5em 2px 0;
   text-transform: uppercase;
 }
 

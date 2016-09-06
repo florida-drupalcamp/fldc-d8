@@ -72,6 +72,12 @@ yamlform.settings:
         allowed_tags:
           type: string
           label: 'Allowed tags'
+        wrapper_classes:
+          type: string
+          label: 'Wrapper CSS classes'
+        classes:
+          type: string
+          label: 'Element CSS classes'
         default_description_display:
           type: string
           label: 'Default title display'
@@ -238,6 +244,9 @@ yamlform.yamlform.*:
         form_prepopulate:
           type: boolean
           label: 'Form prepopulate elements'
+        form_prepopulate_source_entity:
+          type: boolean
+          label: 'Form prepopulate source entity'
         form_novalidate:
           type: boolean
           label: 'Disable client-side validation'
@@ -599,3 +608,11 @@ field.widget.settings.yamlform_entity_reference_autocomplete:
 field.formatter.settings.yamlform_entity_reference_entity_view:
   type: mapping
   label: 'Display the referenced YAML form with default submission data.'
+
+field.formatter.settings.yamlform_entity_reference_link:
+  type: mapping
+  label: 'Display the referenced YAML form as a link.'
+  mapping:
+    label:
+      type: label
+      label: 'Link label to the referenced YAML form'

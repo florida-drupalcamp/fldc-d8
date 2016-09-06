@@ -43,6 +43,12 @@ class YamlFormUiEntityForm extends YamlFormEntityForm {
       'data' => $this->t('Type'),
       'class' => [RESPONSIVE_PRIORITY_LOW],
     ];
+    if ($yamlform->hasFlexboxLayout()) {
+      $header['flex'] = [
+        'data' => $this->t('Flex'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+      ];
+    }
     $header['required'] = [
       'data' => $this->t('Required'),
       'class' => ['yamlform-ui-element-required', RESPONSIVE_PRIORITY_LOW],
@@ -99,7 +105,7 @@ class YamlFormUiEntityForm extends YamlFormEntityForm {
       }
 
       $rows[$key]['title'] = [
-        '#markup' => $element['#title'],
+        '#markup' => $element['#admin_title'] ?: $element['#title'],
         '#prefix' => !empty($indentation) ? drupal_render($indentation) : '',
       ];
       if ($is_container && !$yamlform->hasTranslations()) {
@@ -125,6 +131,12 @@ class YamlFormUiEntityForm extends YamlFormEntityForm {
       $rows[$key]['type'] = [
         '#markup' => $yamlform_element->getPluginLabel(),
       ];
+
+      if ($yamlform->hasFlexboxLayout()) {
+        $rows[$key]['flex'] = [
+          '#markup' => (empty($element['#flex'])) ? 1 : $element['#flex'],
+        ];
+      }
 
       if ($yamlform_element->hasProperty('required')) {
         $rows[$key]['required'] = [
@@ -201,20 +213,32 @@ class YamlFormUiEntityForm extends YamlFormEntityForm {
     // actions and add the needed dialog attributes.
     // @see https://www.drupal.org/node/2585169
     if (!$yamlform->hasTranslations()) {
+      $local_action_attributes = YamlFormDialogHelper::getModalDialogAttributes(800, ['button', 'button-action', 'button--primary', 'button--small']);
       $form['local_actions'] = [
-        'add_element' => [
-          '#type' => 'link',
-          '#title' => $this->t('Add element'),
-          '#url' => new Url('entity.yamlform_ui.element', ['yamlform' => $yamlform->id()]),
-          '#attributes' => YamlFormDialogHelper::getModalDialogAttributes(800, ['button', 'button-action', 'button--primary', 'button--small']),
-          'add_page' => [
-            '#type' => 'link',
-            '#title' => $this->t('Add page'),
-            '#url' => new Url('entity.yamlform_ui.element.add_form', ['yamlform' => $yamlform->id(), 'type' => 'wizard_page']),
-            '#attributes' => YamlFormDialogHelper::getModalDialogAttributes(800, ['button', 'button-action', 'button--primary', 'button--small']),
-          ],
-        ],
+        '#prefix' => '<div class="yamlform-ui-local-actions">',
+        '#suffix' => '</div>',
       ];
+      $form['local_actions']['add_element'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Add element'),
+        '#url' => new Url('entity.yamlform_ui.element', ['yamlform' => $yamlform->id()]),
+        '#attributes' => $local_action_attributes,
+      ];
+      $form['local_actions']['add_page'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Add page'),
+        '#url' => new Url('entity.yamlform_ui.element.add_form', ['yamlform' => $yamlform->id(), 'type' => 'wizard_page']),
+        '#attributes' => $local_action_attributes,
+      ];
+      if ($yamlform->hasFlexboxLayout()) {
+        drupal_set_message($this->t('Flexbox layouts are experimental and provided for testing purposes only. Use at your own risk.'), 'warning');
+        $form['local_actions']['add_layout'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Add layout'),
+          '#url' => new Url('entity.yamlform_ui.element.add_form', ['yamlform' => $yamlform->id(), 'type' => 'flexbox']),
+          '#attributes' => $local_action_attributes,
+        ];
+      }
     }
 
     $form['elements_reordered'] = [
@@ -311,7 +335,7 @@ class YamlFormUiEntityForm extends YamlFormEntityForm {
       }
     }
     $this->buildUpdatedElementsRecursive($elements_updated, '', $elements_reordered, $elements_flattened);
-    
+
     // Update the YAML form's elements.
     $yamlform->setElements($elements_updated);
 

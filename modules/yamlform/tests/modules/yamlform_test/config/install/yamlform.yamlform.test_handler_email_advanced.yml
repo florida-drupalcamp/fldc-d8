@@ -46,6 +46,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true
@@ -113,7 +114,7 @@ handlers:
       to_mail: to@example.com
       cc_mail: ''
       bcc_mail: ''
-      from_mail: '[yamlform-submission:values:email:value]'
+      from_mail: '[yamlform-submission:values:email:raw]'
       from_name: '[yamlform-submission:values:first_name] [yamlform-submission:values:last_name]'
       subject: '[yamlform-submission:values:subject:value]'
       body: default

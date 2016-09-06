@@ -73,6 +73,15 @@ git branch -d [issue-number]-[issue-description]
 git push origin :[issue-number]-[issue-description]
 ```
 
+### [Interdiff](https://www.drupal.org/documentation/git/interdiff)
+
+```bash
+interdiff \
+  [issue-number]-[old-comment-number].patch \
+  [issue-number]-[new-comment-number].patch \
+  > interdiff-[issue-number]-[old-comment-number]-[new-comment-number].txt
+```
+
 ### GitFlow
 
 Below is a cheatsheet for using [GitFlow](https://www.drupal.org/node/2406727) 
@@ -248,6 +257,10 @@ drush -y pm-enable\
   kint\
   webprofiler\
   yamlform\
+  yamlform_devel\
+  yamlform_examples\
+  yamlform_node\
+  yamlform_templates\
   yamlform_test\
   yamlform_translation_test;
 ```

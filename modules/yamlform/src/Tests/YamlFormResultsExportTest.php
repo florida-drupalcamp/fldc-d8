@@ -2,6 +2,10 @@
 
 namespace Drupal\yamlform\Tests;
 
+use Drupal\Core\Archiver\ArchiveTar;
+use Drupal\file\Entity\File;
+use Drupal\yamlform\Entity\YamlForm;
+use Drupal\yamlform\Entity\YamlFormSubmission;
 use Drupal\yamlform\YamlFormInterface;
 
 /**
@@ -19,7 +23,52 @@ class YamlFormResultsExportTest extends YamlFormTestBase {
   public static $modules = ['system', 'block', 'node', 'user', 'locale', 'yamlform', 'yamlform_test'];
 
   /**
-   * Tests export.
+   * Tests download files.
+   */
+  public function testDownloadFiles() {
+    $this->drupalLogin($this->adminFormUser);
+
+    /** @var \Drupal\yamlform\YamlFormInterface $yamlform_managed_file */
+    $yamlform_managed_file = YamlForm::load('test_element_managed_file');
+
+    /** @var \Drupal\yamlform\YamlFormSubmissionExporterInterface $exporter */
+    $exporter = \Drupal::service('yamlform_submission.exporter');
+    $exporter->setYamlForm($yamlform_managed_file);
+
+    $sids = [];
+    $sids[] = $this->postSubmissionTest($yamlform_managed_file);
+    $sids[] = $this->postSubmissionTest($yamlform_managed_file);
+    $sids[] = $this->postSubmissionTest($yamlform_managed_file);
+
+    // Download tar ball archive.
+    $edit = ['export[download][files]' => TRUE];
+    $this->drupalPostForm('admin/structure/yamlform/manage/test_element_managed_file/results/download', $edit, t('Download'));
+
+    // Load the tar and get a list of files.
+    $tar = new ArchiveTar($exporter->getArchiveFilePath([]), 'gz');
+    $files = [];
+    $content_list = $tar->listContent();
+    foreach ($content_list as $file) {
+      $files[$file['filename']] = $file['filename'];
+    }
+
+    // Check CSV files.
+    $this->assert(isset($files['test_element_managed_file/test_element_managed_file.csv']));
+
+    // Check submission file directories.
+    /** @var \Drupal\yamlform\YamlFormSubmissionInterface[] $submissions */
+    $submissions = YamlFormSubmission::loadMultiple($sids);
+    foreach ($submissions as $sid => $submission) {
+      $fid = $submission->getData('file');
+      $filename = File::load($fid)->getFilename();
+
+      $this->assert(isset($files["test_element_managed_file/$sid"]));
+      $this->assert(isset($files["test_element_managed_file/$sid/$filename"]));
+    }
+  }
+
+  /**
+   * Tests export options.
    */
   public function testExportOptions() {
     /** @var \Drupal\yamlform\YamlFormInterface $yamlform */

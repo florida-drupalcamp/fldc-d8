@@ -223,6 +223,13 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
   protected $hasManagedFile = FALSE;
 
   /**
+   * Track if the form is using a flexbox layout.
+   *
+   * @var bool
+   */
+  protected $hasFlexboxLayout = FALSE;
+
+  /**
    * Track if the form has translations.
    *
    * @var bool
@@ -347,26 +354,9 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getIgnoredProperties() {
-    return [
-      // Properties that will allow code injection.
-      '#allowed_tags' => '#allowed_tags',
-      // Properties that will break YAML form data handling.
-      '#tree' => '#tree',
-      '#array_parents' => '#array_parents',
-      '#parents' => '#parents',
-      // Properties that will cause unpredictable rendering.
-      '#weight' => '#weight',
-      // Callbacks are blocked to prevent unwanted code executions.
-      '#after_build' => '#after_build',
-      '#element_validate' => '#element_validate',
-      '#post_render' => '#post_render',
-      '#pre_render' => '#pre_render',
-      '#process' => '#process',
-      '#submit' => '#submit',
-      '#validate' => '#validate',
-      '#value_callback' => '#value_callback',
-    ];
+  public function hasFlexboxLayout() {
+    $this->initElements();
+    return $this->hasFlexboxLayout;
   }
 
   /**
@@ -451,6 +441,7 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
       'form_confidential' => FALSE,
       'form_confidential_message' => '',
       'form_prepopulate' => FALSE,
+      'form_prepopulate_source_entity' => FALSE,
       'form_novalidate' => FALSE,
       'form_autofocus' => FALSE,
       'wizard_progress_bar' => TRUE,
@@ -731,8 +722,7 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
     $element_manager = \Drupal::service('plugin.manager.element_info');
 
     // Remove ignored properties.
-    $ignored_properties = self::getIgnoredProperties();
-    $elements = array_diff_key($elements, array_flip($ignored_properties));
+    $elements = YamlFormElementHelper::removeIgnoredProperties($elements);
 
     foreach ($elements as $key => &$element) {
       if (Element::property($key) || !is_array($element)) {
@@ -746,16 +736,23 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
       $element['#yamlform_id'] = $this->id() . '--' . $key;
       $element['#yamlform_key'] = $key;
       $element['#yamlform_parent_key'] = $parent;
+      $element['#yamlform_parent_flexbox'] = FALSE;
       $element['#yamlform_depth'] = $depth;
       $element['#yamlform_children'] = [];
       if (!empty($parent)) {
-        $this->elementsInitializedAndFlattened[$parent]['#yamlform_children'][$key] = $key;
+        $parent_element = $this->elementsInitializedAndFlattened[$parent];
+        // Add element to the parent element's children.
+        $parent_element['#yamlform_children'][$key] = $key;
+        // Set #parent_flexbox to TRUE is the parent element is a
+        // 'yamlform_flexbox'.
+        $element['#yamlform_parent_flexbox'] = (isset($parent_element['#type']) && $parent_element['#type'] == 'yamlform_flexbox') ? TRUE : FALSE;
       }
 
-      // Set title to NULL if is is not defined.
-      if (!isset($element['#title'])) {
-        $element['#title'] = NULL;
-      }
+      // Set #title and #admin_title to NULL if it is not defined.
+      $element += [
+        '#title' => NULL,
+        '#admin_title' => NULL,
+      ];
 
       // If #private set #access.
       if (!empty($element['#private'])) {
@@ -767,6 +764,11 @@ class YamlForm extends ConfigEntityBundleBase implements YamlFormInterface {
         // Track managed file upload.
         if ($element['#type'] == 'managed_file') {
           $this->hasManagedFile = TRUE;
+        }
+
+        // Track flexbox.
+        if ($element['#type'] == 'flexbox' || $element['#type'] == 'yamlform_flexbox') {
+          $this->hasFlexboxLayout = TRUE;
         }
 
         // Set yamlform_* prefix to #type that are using alias without yamlform_

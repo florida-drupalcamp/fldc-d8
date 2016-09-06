@@ -46,6 +46,12 @@ yamlform.form:
     - core/drupal
     - core/jquery
     - core/jquery.once
+    - yamlform/yamlform.states
+
+yamlform.states:
+  version: 1.x
+  js:
+    js/yamlform.states.js:  {}
 
 yamlform.options:
   version: 1.x
@@ -102,6 +108,11 @@ yamlform.element.color:
   css:
     theme:
       css/yamlform.element.color.css: {}
+  js:
+    js/yamlform.element.color.js: {}
+  dependencies:
+    - core/modernizr
+    - yamlform/yamlform.element.inputmask
 
 yamlform.element.composite:
   version: 1.x
@@ -130,6 +141,12 @@ yamlform.element.details:
     - core/drupal
     - core/jquery
     - core/jquery.once
+
+yamlform.element.flexbox:
+  version: 1.x
+  css:
+    theme:
+      css/yamlform.element.flexbox.css: {}
 
 yamlform.element.html_editor:
   version: 1.x
@@ -235,14 +252,14 @@ yamlform.navigation:
 
 codemirror.text:
   remote: https://github.com/codemirror/codemirror
-  version: &yamlform_codemirror_version 5.16.0
+  version: &yamlform_codemirror_version 5.17.0
   license: &yamlform_codemirror_license
     name: MIT
     url: http://codemirror.net/LICENSE
     gpl-compatible: true
   cdn: &yamlform_codemirror_cdn
-    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.16.0/
-    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.16.0/
+    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/
+    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/
   css:
     theme:
       /libraries/codemirror/lib/codemirror.css: {}

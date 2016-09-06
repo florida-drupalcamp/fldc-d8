@@ -19,27 +19,7 @@ class YamlFormEmailConfirm extends Email {
    * {@inheritdoc}
    */
   public function getDefaultProperties() {
-    return [
-      'title' => '',
-      'description' => '',
-
-      'required' => FALSE,
-      'default_value' => '',
-
-      'title_display' => '',
-      'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'private' => FALSE,
-      'unique' => FALSE,
-
-      'format' => $this->getDefaultFormat(),
-
-      'size' => '',
-      'maxlength' => '',
-      'placeholder' => '',
-      'pattern' => '',
-
+    return parent::getDefaultProperties() + [
       'confirm__title' => '',
       'confirm__description' => '',
       'confirm__placeholder' => '',

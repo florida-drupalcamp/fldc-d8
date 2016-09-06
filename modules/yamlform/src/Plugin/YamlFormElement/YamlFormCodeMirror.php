@@ -25,15 +25,21 @@ class YamlFormCodeMirror extends YamlFormElementBase {
     return [
       'title' => '',
       'description' => '',
+
       'required' => FALSE,
+      'required_error' => '',
+
       'default_value' => '',
+
       'title_display' => '',
       'description_display' => '',
-      'prefix' => '',
-      'suffix' => '',
+
       'private' => FALSE,
+
       'format' => $this->getDefaultFormat(),
       'mode' => 'text',
+
+      'flex' => 1,
     ];
   }
 

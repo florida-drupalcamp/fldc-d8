@@ -2,7 +2,9 @@
 
 namespace Drupal\yamlform_node\Tests;
 
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\yamlform\Entity\YamlForm;
+use Drupal\yamlform\Entity\YamlFormSubmission;
 use Drupal\yamlform\Tests\YamlFormTestBase;
 
 /**
@@ -93,6 +95,63 @@ class YamlFormNodeTest extends YamlFormTestBase {
     $this->assertNoFieldByName('op', 'Submit');
     $this->assertRaw('Only 3 submissions are allowed.');
     $this->assertNoRaw('You are only allowed to have 1 submission for this form.');
+
+    /* Prepopulate source entity */
+
+    $yamlform_contact = YamlForm::load('contact');
+
+    $node->yamlform->target_id = 'contact';
+    $node->yamlform->status = 1;
+    $node->yamlform->default_data = "name: '{name}'";
+    $node->save();
+
+    $source_entity_options = ['query' => ['source_entity_type' => 'node', 'source_entity_id' => $node->id()]];
+
+    // Check default data from source entity using query string.
+    $this->drupalGet('yamlform/contact', $source_entity_options);
+    $this->assertFieldByName('name', '{name}');
+
+    // Check prepopulating source entity using query string.
+    $edit = [
+      'name' => 'name',
+      'email' => 'example@example.com',
+      'subject' => 'subject',
+      'message' => 'message',
+    ];
+    $this->drupalPostForm('yamlform/contact', $edit, t('Send message'), $source_entity_options);
+    $sid = $this->getLastSubmissionId($yamlform_contact);
+    $submission = YamlFormSubmission::load($sid);
+    $this->assertNotNull($submission->getSourceEntity());
+    if ($submission->getSourceEntity()) {
+      $this->assertEqual($submission->getSourceEntity()
+        ->getEntityTypeId(), 'node');
+      $this->assertEqual($submission->getSourceEntity()->id(), $node->id());
+    }
+
+    /* Check displaying link to form */
+
+    // Set YAML form reference to be displayed as a link.
+    $display_options = [
+      'type' => 'yamlform_entity_reference_link',
+      'settings' => [
+        'label' => 'Register',
+      ],
+    ];
+    $view_display = EntityViewDisplay::load('node.yamlform.default');
+    $view_display->setComponent('yamlform', $display_options)->save();
+
+    // Set default data.
+    $node->yamlform->target_id = 'contact';
+    $node->yamlform->status = 1;
+    $node->yamlform->default_data = "name: '{name}'";
+    $node->save();
+
+    // Check 'Register' link.
+    $this->drupalGet('node/' . $node->id());
+    $this->assertLink('Register');
+
+    // Check that link include source_entity_type and source_entity_id.
+    $this->assertLinkByHref($yamlform_contact->toUrl('canonical', $source_entity_options)->toString());
   }
 
 }

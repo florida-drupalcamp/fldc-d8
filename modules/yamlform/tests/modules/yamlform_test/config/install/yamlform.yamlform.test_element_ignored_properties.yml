@@ -10,7 +10,7 @@ elements: |
   test:
     '#type': 'textfield'
     '#title': 'test'
-    # Copied from: \Drupal\yamlform\YamlForm::getIgnoredProperties();
+    # Copied from: \Drupal\yamlform\Utility\YamlFormElementHelper::$ignoredProperties;
     # Properties that will break YAML form data handling.
     '#tree': '#tree'
     '#array_parents': '#array_parents'
@@ -35,6 +35,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

@@ -3,7 +3,6 @@
 namespace Drupal\yamlform\Plugin\YamlFormElement;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\yamlform\YamlFormElementBase;
 
 /**
  * Provides a 'toggle' element.
@@ -23,7 +22,6 @@ class YamlFormToggle extends Checkbox {
     $properties = parent::getDefaultProperties() + [
       'toggle_theme' => 'light',
       'toggle_size' => 'medium',
-      'toggle_type' => 'compact',
       'on_text' => '',
       'off_text' => '',
     ];
@@ -76,7 +74,7 @@ class YamlFormToggle extends Checkbox {
       '#title' => $this->t('Toggle size'),
       '#options' => [
         'small' => $this->t('Small (@size)', ['@size' => '16px']),
-        'medium' => $this->t('Medium (@size)', ['@size' => '34px']),
+        'medium' => $this->t('Medium (@size)', ['@size' => '24px']),
         'large' => $this->t('Large (@size)', ['@size' => '32px']),
       ],
       '#required' => TRUE,

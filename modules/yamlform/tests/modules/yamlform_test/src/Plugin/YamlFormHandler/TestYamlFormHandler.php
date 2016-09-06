@@ -79,6 +79,13 @@ class TestYamlFormHandler extends YamlFormHandlerBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state, YamlFormSubmissionInterface $yamlform_submission) {
+    $this->displayMessage(__FUNCTION__);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function confirmForm(array &$form, FormStateInterface $form_state, YamlFormSubmissionInterface $yamlform_submission) {
     drupal_set_message($this->configuration['message']);
     \Drupal::logger('yamlform.test')->notice($this->configuration['message']);
     $this->displayMessage(__FUNCTION__);

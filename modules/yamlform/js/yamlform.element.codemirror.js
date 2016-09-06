@@ -60,6 +60,7 @@
   $(window).on('dialog:aftercreate', function (dialog, $element, settings) {
     // Delay refreshing CodeMirror for 10 millisecond while the dialog is
     // still being rendered.
+    // @see http://stackoverflow.com/questions/8349571/codemirror-editor-is-not-loading-content-until-clicked
     setTimeout(function() {
       $('.CodeMirror').each(function (index, $element) {
         var $details = $(this).parents('details:not([open])');
@@ -69,6 +70,16 @@
         $details.removeAttr('open');
       });
     }, 10);
+  });
+
+  // On state:visible refresh CodeMirror elements.
+  $(document).on('state:visible', function(event) {
+    var $element = $(event.target);
+    if ($element.hasClass('js-yamlform-codemirror')) {
+      $element.parent().find('.CodeMirror').each(function (index, $element) {
+        $element.CodeMirror.refresh();
+      });
+    }
   });
 
 })(jQuery, Drupal);

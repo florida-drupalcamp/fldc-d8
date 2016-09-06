@@ -24,9 +24,6 @@ elements: |
         required:
           ':input[name="checkbox"]':
             checked: true
-        enabled:
-          ':input[name="checkbox"]':
-            checked: true
   select_example:
     '#type': details
     '#title': 'Select with other example'
@@ -48,9 +45,6 @@ elements: |
           ':input[name="select"]':
             value: other
         required:
-          ':input[name="select"]':
-            value: other
-        enabled:
           ':input[name="select"]':
             value: other
   radios_example:
@@ -76,9 +70,6 @@ elements: |
         required:
           ':input[name="radios"]':
             value: other
-        enabled:
-          ':input[name="radios"]':
-            value: other
   checkbox_more_example:
     '#type': details
     '#title': 'Checkbox with more information example'
@@ -101,17 +92,11 @@ elements: |
           required:
             ':input[name="checkbox_more"]':
               checked: true
-          enabled:
-            ':input[name="checkbox_more"]':
-              checked: true
       checkbox_more_last_name:
         '#type': textfield
         '#title': 'Last name'
         '#states':
           required:
-            ':input[name="checkbox_more"]':
-              checked: true
-          enabled:
             ':input[name="checkbox_more"]':
               checked: true
   filled_example:
@@ -131,6 +116,44 @@ elements: |
         required:
           ':input[name="filled"]':
             filled: true
+  empty_example:
+    '#type': details
+    '#title': 'Hide and clear elements example'
+    '#open': true
+    empty_example_checkbox:
+      '#type': checkbox
+      '#title': 'Check this box to hide and clear the values for the below textfield, select, and radio elements'
+    empty_example_textfield:
+      '#type': textfield
+      '#default_value': 'Some value'
+      '#states':
+        invisible:
+          ':input[name="empty_example_checkbox"]':
+            checked: true
+    empty_example_select:
+      '#type': select
+      '#title':  'Select'
+      '#options':
+        1: One
+        2: Two
+        3: Three
+      '#default_value': 1
+      '#states':
+        invisible:
+          ':input[name="empty_example_checkbox"]':
+            checked: true
+    empty_example_radios:
+      '#type': radios
+      '#title':  'Radios'
+      '#options':
+        1: One
+        2: Two
+        3: Three
+      '#default_value': 1
+      '#states':
+        invisible:
+          ':input[name="empty_example_checkbox"]':
+            checked: true
 settings:
   page: true
   page_submit_path: ''
@@ -141,6 +164,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

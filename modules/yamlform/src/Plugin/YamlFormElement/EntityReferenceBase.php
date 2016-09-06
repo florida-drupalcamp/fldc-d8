@@ -47,6 +47,7 @@ abstract class EntityReferenceBase extends YamlFormElementBase {
 
     $format = $this->getFormat($element);
     switch ($format) {
+      case 'raw':
       case 'id':
       case 'label':
       case 'text':
@@ -213,7 +214,7 @@ abstract class EntityReferenceBase extends YamlFormElementBase {
     if (empty($element['#tags']) && $options['entity_reference_format'] == 'link') {
       $header = [];
       if ($options['header_keys'] == 'label') {
-        $label = $this->getLabel($element);
+        $label = $this->getAdminLabel($element);
         $header[] = $label . ' ID';
         $header[] = $label . ' Title';
         $header[] = $label . ' URL';

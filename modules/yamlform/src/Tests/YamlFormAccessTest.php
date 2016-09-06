@@ -124,7 +124,7 @@ class YamlFormAccessTest extends YamlFormTestBase {
 
     $this->drupalLogin($account);
 
-    // Check that all the test paths are access denied for anonymous.
+    // Check that all the test paths are access denied for authenticated.
     foreach ($any_tests as $path => $permission) {
       $path = str_replace('{yamlform}', $yamlform_id, $path);
       $path = str_replace('{yamlform_submission}', $sid, $path);
@@ -149,7 +149,7 @@ class YamlFormAccessTest extends YamlFormTestBase {
       $this->drupalGet($path);
       $this->assertResponse(200, 'YAML form allows access via role access rules');
 
-      // Check access rule via role.
+      // Check access rule via user id.
       $access_rules = [
         $permission => [
           'roles' => [],

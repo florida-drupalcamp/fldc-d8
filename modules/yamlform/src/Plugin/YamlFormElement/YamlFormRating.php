@@ -86,7 +86,7 @@ class YamlFormRating extends Range {
       '#title' => $this->t('Star size'),
       '#options' => [
         'small' => $this->t('Small (@size)', ['@size' => '16px']),
-        'medium' => $this->t('Medium (@size)', ['@size' => '34px']),
+        'medium' => $this->t('Medium (@size)', ['@size' => '24px']),
         'large' => $this->t('Large (@size)', ['@size' => '32px']),
       ],
       '#required' => TRUE,

@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
+use Drupal\user\Entity\User;
 
 /**
  * Base for controller for YAML form settings.
@@ -22,12 +23,12 @@ class YamlFormEntitySettingsForm extends EntityForm {
     $default_settings = $this->config('yamlform.settings')->get('settings');
     $settings = $yamlform->getSettings();
 
+    // General.
     $form['general'] = [
       '#type' => 'details',
       '#title' => $this->t('General settings'),
       '#open' => TRUE,
     ];
-
     $form['general']['id'] = [
       '#type' => 'item',
       '#title' => $this->t('ID'),
@@ -57,7 +58,15 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#access' => $this->moduleHandler->moduleExists('yamlform_templates'),
       '#default_value' => $yamlform->isTemplate(),
     ];
+    $form['general']['results_disabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable saving of submissions.'),
+      '#return_value' => TRUE,
+      '#description' => $this->t('If saving of submissions is disabled, submission settings, submission limits and the saving of drafts will be disabled.  Submissions must be sent via an email or handled using a custom <a href=":href">form handler</a>.', [':href' => Url::fromRoute('entity.yamlform.handlers_form', ['yamlform' => $yamlform->id()])->toString()]),
+      '#default_value' => $settings['results_disabled'],
+    ];
 
+    // Page.
     $form['page'] = [
       '#type' => 'details',
       '#title' => $this->t('Page settings'),
@@ -101,6 +110,7 @@ class YamlFormEntitySettingsForm extends EntityForm {
       ];
     }
 
+    // Form.
     $form['form'] = [
       '#type' => 'details',
       '#title' => $this->t('Form settings'),
@@ -121,7 +131,6 @@ class YamlFormEntitySettingsForm extends EntityForm {
           ':input[name="template"]' => ['checked' => FALSE],
         ],
       ],
-
     ];
     $form['form']['form_closed_message']  = [
       '#type' => 'yamlform_html_editor',
@@ -133,7 +142,7 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#type' => 'yamlform_html_editor',
       '#title' => $this->t('Form exception message'),
       '#description' => $this->t('A message to be displayed if the form breaks.'),
-      '#default_value' => $settings['form_closed_message'],
+      '#default_value' => $settings['form_exception_message'],
     ];
     $form['form']['form_submit_label'] = [
       '#type' => 'textfield',
@@ -141,29 +150,19 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#size' => 20,
       '#default_value' => $settings['form_submit_label'],
     ];
-    $form['form']['form_confidential'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Confidential submissions'),
-      '#description' => $this->t('Confidential submissions have no recorded IP address and must be submitted while logged out.'),
-      '#return_value' => TRUE,
-      '#default_value' => $settings['form_confidential'],
-    ];
-    $form['form']['form_confidential_message']  = [
-      '#type' => 'yamlform_html_editor',
-      '#title' => $this->t('Form confidential message'),
-      '#description' => $this->t('A message to be displayed when authenticated users try to access a confidential form.'),
-      '#default_value' => $settings['form_confidential_message'],
-      '#states' => [
-        'visible' => [
-          ':input[name="form_confidential"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
     $form['form']['form_prepopulate'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow elements to be populated using query string parameters.'),
+      '#description' => $this->t("If checked, elements can be populated using query string parameters. For example, appending ?name=John+Smith to a form's URL would setting an the 'name' element's default value to 'John Smith'."),
       '#return_value' => TRUE,
       '#default_value' => $settings['form_prepopulate'],
+    ];
+    $form['form']['form_prepopulate_source_entity'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Allow source entity to be populated using query string parameters.'),
+      '#description' => $this->t("If checked, source entity can be populated using query string parameters. For example, appending ?source_entity_type=user&source_entity_id=1 to a form's URL would set a submission's 'Submitted to' value to '@user.", ['@user' => User::load(1)->label()]),
+      '#return_value' => TRUE,
+      '#default_value' => $settings['form_prepopulate_source_entity'],
     ];
     if ($default_settings['default_form_novalidate']) {
       $form['form']['form_novalidate_disabled'] = [
@@ -195,6 +194,7 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#default_value' => $settings['form_autofocus'],
     ];
 
+    // Wizard.
     $form['wizard'] = [
       '#type' => 'details',
       '#title' => $this->t('Wizard settings'),
@@ -256,6 +256,7 @@ class YamlFormEntitySettingsForm extends EntityForm {
       ],
     ];
 
+    // Preview.
     $form['preview'] = [
       '#type' => 'details',
       '#title' => $this->t('Preview settings'),
@@ -301,10 +302,16 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#default_value' => $settings['preview_message'],
     ];
 
+    // Draft.
     $form['draft'] = [
       '#type' => 'details',
       '#title' => $this->t('Draft settings'),
       '#open' => TRUE,
+      '#states' => [
+        'visible' => [
+          ':input[name="results_disabled"]' => ['checked' => FALSE],
+        ],
+      ],
     ];
     $form['draft']['draft'] = [
       '#type' => 'checkbox',
@@ -348,6 +355,79 @@ class YamlFormEntitySettingsForm extends EntityForm {
       '#default_value' => $settings['draft_loaded_message'],
     ];
 
+    // Submission.
+    $form['submission'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Submission settings'),
+      '#open' => TRUE,
+      '#states' => [
+        'visible' => [
+          ':input[name="results_disabled"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+    $form['submission']['form_confidential'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Confidential submissions'),
+      '#description' => $this->t('Confidential submissions have no recorded IP address and must be submitted while logged out.'),
+      '#return_value' => TRUE,
+      '#default_value' => $settings['form_confidential'],
+    ];
+    $form['submission']['form_confidential_message']  = [
+      '#type' => 'yamlform_html_editor',
+      '#title' => $this->t('Form confidential message'),
+      '#description' => $this->t('A message to be displayed when authenticated users try to access a confidential form.'),
+      '#default_value' => $settings['form_confidential_message'],
+      '#states' => [
+        'visible' => [
+          ':input[name="form_confidential"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
+    // Limits.
+    $form['limits'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Submission limits'),
+      '#open' => TRUE,
+      '#states' => [
+        'visible' => [
+          ':input[name="results_disabled"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+    $form['limits']['limit_total'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Total submissions limit'),
+      '#default_value' => $settings['limit_total'],
+    ];
+    $form['limits']['entity_limit_total'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Total submissions limit per entity'),
+      '#default_value' => $settings['entity_limit_total'],
+    ];
+    $form['limits']['limit_total_message'] = [
+      '#type' => 'yamlform_html_editor',
+      '#title' => $this->t('Total submissions limit message'),
+      '#default_value' => $settings['limit_total_message'],
+    ];
+    $form['limits']['limit_user'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Per user submission limit'),
+      '#default_value' => $settings['limit_user'],
+    ];
+    $form['limits']['entity_limit_user'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Per user submission limit per entity'),
+      '#default_value' => $settings['entity_limit_user'],
+    ];
+    $form['limits']['limit_user_message'] = [
+      '#type' => 'yamlform_html_editor',
+      '#title' => $this->t('Per user submission limit message'),
+      '#default_value' => $settings['limit_user_message'],
+    ];
+
+    // Confirmation.
     $form['confirmation'] = [
       '#type' => 'details',
       '#title' => $this->t('Confirmation settings'),
@@ -365,7 +445,6 @@ class YamlFormEntitySettingsForm extends EntityForm {
       ],
       '#default_value' => $settings['confirmation_type'],
     ];
-
     $form['confirmation']['confirmation_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Confirmation URL'),
@@ -379,7 +458,6 @@ class YamlFormEntitySettingsForm extends EntityForm {
         ],
       ],
     ];
-
     $form['confirmation']['confirmation_message'] = [
       '#type' => 'yamlform_html_editor',
       '#title' => $this->t('Confirmation message'),
@@ -391,56 +469,14 @@ class YamlFormEntitySettingsForm extends EntityForm {
         ],
       ],
     ];
-
-    $form['submission'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Submission settings'),
-      '#open' => TRUE,
-    ];
-    $form['submission']['limit_total'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Total submissions limit'),
-      '#default_value' => $settings['limit_total'],
-    ];
-    $form['submission']['entity_limit_total'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Total submissions limit per entity'),
-      '#default_value' => $settings['entity_limit_total'],
-    ];
-    $form['submission']['limit_total_message'] = [
-      '#type' => 'yamlform_html_editor',
-      '#title' => $this->t('Total submissions limit message'),
-      '#default_value' => $settings['limit_total_message'],
-    ];
-    $form['submission']['limit_user'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Per user submission limit'),
-      '#default_value' => $settings['limit_user'],
-    ];
-    $form['submission']['entity_limit_user'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Per user submission limit per entity'),
-      '#default_value' => $settings['entity_limit_user'],
-    ];
-    $form['submission']['limit_user_message'] = [
-      '#type' => 'yamlform_html_editor',
-      '#title' => $this->t('Per user submission limit message'),
-      '#default_value' => $settings['limit_user_message'],
+    $form['confirmation']['token_tree_link'] = [
+      '#theme' => 'token_tree_link',
+      '#token_types' => ['yamlform', 'yamlform_submission'],
+      '#click_insert' => FALSE,
+      '#dialog' => TRUE,
     ];
 
-    $form['results'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Results settings'),
-      '#open' => TRUE,
-    ];
-    $form['results']['results_disabled'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Disable saving of submissions.'),
-      '#return_value' => TRUE,
-      '#description' => $this->t('If results are disabled, submissions must be sent via <a href=":href">email and/or a custom form handler</a>.', [':href' => Url::fromRoute('entity.yamlform.handlers_form', ['yamlform' => $yamlform->id()])->toString()]),
-      '#default_value' => $settings['results_disabled'],
-    ];
-
+    // Author.
     $form['author'] = [
       '#type' => 'details',
       '#title' => $this->t('Author information'),

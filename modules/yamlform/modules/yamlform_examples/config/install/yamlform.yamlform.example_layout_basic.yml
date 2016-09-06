@@ -4,17 +4,20 @@ dependencies: {  }
 uid: null
 template: false
 id: example_layout_basic
-title: 'Example: Layout basic'
+title: 'Example: Basic layout'
 description: 'Basic layout examples using the .form--inline and .container-inline classes and tables that are included in Drupal 8 core.'
 elements: |
   form_inline_example:
     '#type': details
-    '#title': 'Form inline (.form--inline)'
+    '#title': 'Form inline with warning (.form--inline.messages.messages--warning)'
     '#open': true
     form_inline_container:
-      '#display_on': both
-      '#prefix': '<div class="form--inline clearfix">'
-      '#suffix': '</div>'
+      '#type': container
+      '#attributes':
+        class:
+          - 'form--inline clearfix'
+          - 'messages messages--warning'
+        style: 'padding-top: 0; padding-bottom: 0;'
       form_inline_first_name:
         '#title': 'First Name'
         '#type': textfield
@@ -31,14 +34,16 @@ elements: |
       '#title': 'First Name'
       '#type': textfield
       '#size': 20
-      '#prefix': '<div class="container-inline clearfix">'
-      '#suffix': '</div>'
+      '#wrapper_attributes':
+        class:
+          - 'container-inline clearfix'
     container_inline_last_name:
       '#title': 'Last Name'
       '#type': textfield
       '#size': 20
-      '#prefix': '<div class="container-inline clearfix">'
-      '#suffix': '</div>'
+      '#wrapper_attributes':
+        class:
+          - 'container-inline clearfix'
   options_example:
     '#type': details
     '#title': 'Options (#options_display)'
@@ -171,6 +176,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

@@ -20,6 +20,7 @@ settings:
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: true
+  form_prepopulate_source_entity: false
   form_novalidate: false
   form_autofocus: false
   wizard_progress_bar: true

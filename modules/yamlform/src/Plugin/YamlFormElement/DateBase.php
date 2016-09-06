@@ -5,11 +5,24 @@ namespace Drupal\yamlform\Plugin\YamlFormElement;
 use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\yamlform\YamlFormElementBase;
+use Drupal\yamlform\YamlFormSubmissionInterface;
 
 /**
  * Provides a base 'date' class.
  */
 abstract class DateBase extends YamlFormElementBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function prepare(array &$element, YamlFormSubmissionInterface $yamlform_submission) {
+    // Don't used 'datetime_wrapper', instead use 'form_element' wrapper.
+    // @see \Drupal\Core\Datetime\Element\Datelist
+    // @see \Drupal\yamlform\Plugin\YamlFormElement\DateTime
+    $element['#theme_wrappers'] = ['form_element'];
+
+    parent::prepare($element, $yamlform_submission);
+  }
 
   /**
    * {@inheritdoc}

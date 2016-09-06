@@ -137,7 +137,7 @@ class YamlFormNodeResultsTest extends YamlFormTestBase {
       'default' => TRUE,
     ];
     $this->drupalPostForm('admin/structure/yamlform/manage/' . $yamlform->id() . '/results/table/custom', $edit, t('Save'));
-    $this->assertRaw('The customized columns and results per page limit have been saved.');
+    $this->assertRaw('The customized table has been saved.');
 
     // Check that the YAML form node's results table is now customized.
     $this->drupalGet('node/' . $node->id() . '/yamlform/results/table');

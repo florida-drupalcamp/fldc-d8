@@ -18,7 +18,7 @@ class YamlFormCreditCard extends YamlFormCompositeBase {
 
     $elements = [];
     $elements['warning'] = [
-      '#markup' => '<div class="messages messages--warning">' . t('The credit card element is experimental and insecure because it stores information as plain text.') . '</div>',
+      '#markup' => '<div class="messages messages--warning">' . t('The credit card element is experimental and insecure because it stores submitted information as plain text.') . '</div>',
       '#allowed_tags' => ['div'],
     ];
     $elements['name'] = [
