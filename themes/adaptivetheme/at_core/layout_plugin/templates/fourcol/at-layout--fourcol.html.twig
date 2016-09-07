@@ -1,0 +1,48 @@
+{#
+/**
+ * @file
+ * Adaptivetheme implementation to display a two column Layout Plugin layout.
+ *
+ * Available variables:
+ * - content: all output
+ * - attributes: layout attributes
+#}
+<{{ html_element }}{{ attributes.addClass('clearfix') }}>
+  {% if content.top %}
+    <div class="atl__top clearfix">
+      {{ content.top }}
+    </div>
+  {% endif %}
+
+  <div class="atl__lr clearfix">
+    {% if content.col_1 %}
+      <div class="atl__lc lc-1">
+        {{ content.col_1 }}
+      </div>
+    {% endif %}
+
+    {% if content.col_2 %}
+      <div class="atl__lc lc-2">
+        {{ content.col_2 }}
+      </div>
+    {% endif %}
+
+    {% if content.col_3 %}
+      <div class="atl__lc lc-3">
+        {{ content.col_3 }}
+      </div>
+    {% endif %}
+
+    {% if content.col_4 %}
+      <div class="atl__lc lc-4">
+        {{ content.col_4 }}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if content.bottom %}
+    <div class="atl__bottom clearfix">
+      {{ content.bottom }}
+    </div>
+  {% endif %}
+</{{ html_element }}>

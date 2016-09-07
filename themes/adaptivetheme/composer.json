@@ -1,0 +1,30 @@
+{
+    "name": "drupal/adaptivetheme",
+    "type": "drupal-theme",
+    "description": "Advanced base theme for Drupal.",
+    "keywords": ["theme", "base theme", "drupal", "adaptivetheme"],
+    "license": "GPL-2.0+",
+    "homepage": "https://www.drupal.org/project/adaptivetheme",
+    "minimum-stability": "8.*",
+    "support": {
+        "issues": "http://drupal.org/project/issues/adaptivetheme",
+        "source": "https://www.drupal.org/project/adaptivetheme"
+    },
+    "authors": [
+        {
+            "name": "Jeff Burnz",
+            "homepage": "http://adaptivethemes.com/",
+            "role": "Maintainer"
+        }
+    ],
+    "require": {
+        "drupal/layout_plugin": "8.*",
+        "drupal/at_tools": "8.*"
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    }
+}

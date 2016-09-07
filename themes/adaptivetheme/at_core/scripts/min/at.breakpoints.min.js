@@ -1,0 +1,2 @@
+!function(a,b,c){"use strict";Drupal.behaviors.atBP={attach:function(a,d){function e(a,b){enquire.register(b,{match:function(){c.body.classList.add("bp--"+a)},unmatch:function(){c.body.classList.remove("bp--"+a)}})}if(b.matchMedia("only screen").matches){var f=d.ajaxPageState.theme,g=d[f].at_breakpoints;for(var h in g)g.hasOwnProperty(h)&&e(h,g[h].mediaquery)}}}}(jQuery,window,document);
+//# sourceMappingURL=at.breakpoints.min.js.map

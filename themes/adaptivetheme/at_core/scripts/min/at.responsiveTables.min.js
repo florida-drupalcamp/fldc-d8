@@ -1,0 +1,2 @@
+!function(a,b){"use strict";if(a("table.forum").addClass("responsive-enabled"),a("table.responsive-enabled").wrap('<div class="responsive-table"><div class="responsive-table__scroll"></div></div>'),a("table.responsive-enabled").prop("scrollWidth")>a(".responsive-table").width()){var c=b.t("Scroll to view");a(".responsive-table__scroll").append('<div class="responsive-table__message"><em>'+c+"</em></div>"),a("table.responsive-enabled").addClass("has-overflow")}}(jQuery,Drupal);
+//# sourceMappingURL=at.responsiveTables.min.js.map

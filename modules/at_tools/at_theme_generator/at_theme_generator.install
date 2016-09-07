@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * AT Theme Generator install file.
+ */
+
+use Drupal\at_theme_generator\File\DirectoryOperations;
+
+/**
+ * Implements hook_install().
+ */
+function at_theme_generator_install() {
+  $list_info = \Drupal::service('theme_handler')->listInfo();
+  $theme = 'at_generator';
+
+  // Check if at_generator is installed.
+  if (array_key_exists($theme, $list_info)) {
+    // Check if the old generator theme is default, if so replace with bartik.
+    if ($theme = \Drupal::service('theme_handler')->getDefault()) {
+      \Drupal::service('theme_handler')->setDefault('bartik');
+      drupal_set_message(t('Bartik set as default theme.'), 'status');
+    }
+    // Now uninstall it.
+    \Drupal::service('theme_installer')->uninstall(array($theme));
+  }
+  // Now remove the old generator theme.
+  $gen_path = drupal_get_path('theme', $theme);
+  if (!empty($gen_path)) {
+    $directoryOperations = new DirectoryOperations();
+    $directoryOperations->directoryRemove($gen_path);
+    drupal_set_message(t('Old at_generator theme has been removed, please use the new Theme Generator tab in Appearance settings.'), 'status');
+  }
+}

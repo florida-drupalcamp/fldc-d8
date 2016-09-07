@@ -1,0 +1,29 @@
+{
+    "name": "drupal/at_tools",
+    "type": "drupal-module",
+    "description": "Tools to support Adaptivetheme and sub-themes.",
+    "keywords": ["theme", "base theme", "drupal", "adaptivetheme"],
+    "license": "GPL-2.0+",
+    "homepage": "https://www.drupal.org/project/at_tools",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "http://drupal.org/project/issues/at_tools",
+        "source": "https://www.drupal.org/project/at_tools"
+    },
+    "authors": [
+        {
+            "name": "Jeff Burnz",
+            "homepage": "http://adaptivethemes.com/",
+            "role": "Maintainer"
+        }
+    ],
+    "require": {
+        "drupal/adaptivetheme": "8.*",
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    }
+}

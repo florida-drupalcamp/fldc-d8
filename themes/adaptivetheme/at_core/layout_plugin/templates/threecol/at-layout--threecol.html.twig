@@ -1,0 +1,55 @@
+{#
+/**
+ * @file
+ * Adaptivetheme implementation to display a three column Layout Plugin layout.
+ *
+ * Available variables:
+ * - content: all output
+ * - attributes: layout attributes
+#}
+{% set layout_classes %}
+  {% if content.col_1 and content.col_2 and content.col_3 %}
+    l-arc--3 l-ac--1-2-3
+  {% elseif content.col_1 and content.col_2 and (content.col_3 is null) %}
+    l-arc--2 l-ac--1-2
+  {% elseif content.col_1 and content.col_3 and (content.col_2 is null) %}
+    l-arc--2 l-ac--1-3
+  {% elseif content.col_2 and content.col_3 and (content.col_1 is null) %}
+    l-arc--2 l-ac--2-3
+  {% endif %}
+{% endset %}
+<{{ html_element }}{{ attributes.addClass(layout_classes|trim, 'clearfix') }}>
+  {% if content.top %}
+    <div class="atl__top clearfix">
+      {{ content.top }}
+    </div>
+  {% endif %}
+
+  {% if content.col_1 or content.col_2 or content.col_3 %}
+    <div class="atl__lr clearfix">
+      {% if content.col_1 %}
+        <div class="atl__lc lc-1">
+          {{ content.col_1 }}
+        </div>
+      {% endif %}
+
+      {% if content.col_2 %}
+        <div class="atl__lc lc-2">
+          {{ content.col_2 }}
+        </div>
+      {% endif %}
+
+      {% if content.col_3 %}
+        <div class="atl__lc lc-3">
+          {{ content.col_3 }}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if content.bottom %}
+    <div class="atl__bottom clearfix">
+      {{ content.bottom }}
+    </div>
+  {% endif %}
+</{{ html_element }}>

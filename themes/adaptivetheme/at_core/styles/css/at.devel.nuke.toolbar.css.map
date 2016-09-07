@@ -1,0 +1,1 @@
+{"version":3,"sources":["at.devel.nuke.toolbar.css"],"names":[],"mappings":"AAAA;EACE,cAAc;CACf;;AAED;EACE,sBAAsB;EACtB,qBAAqB;CACtB","file":"at.devel.nuke.toolbar.css","sourcesContent":["#toolbar-administration {\n  display: none;\n}\n\nbody {\n  padding: 0 !important;\n  margin: 0 !important;\n}\n"]}

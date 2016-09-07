@@ -1,0 +1,305 @@
+// Layouts
+
+.admin-theme--seven {
+
+  #edit-layouts {
+    padding: 0;
+    overflow: hidden;
+
+    // Be very obvious with disabled forms
+    .form-disabled,
+    .layouts-column.form-disabled {
+      background: #f5f5f2;
+
+      label, h2, h3, p, div, a, span, em, li, td, th {
+        color: #737373;
+      }
+
+      *:hover {
+        background: #f5f5f2;
+      }
+
+      *:before,
+      img {
+        opacity: 0.5;
+      }
+    }
+
+    #edit-layouts-enable-container {
+      label,
+      .form-disabled {
+        background: transparent !important;
+      }
+    }
+
+    #edit-adv-options {
+      .details-wrapper {
+        padding: 0.5em 1em;
+      }
+
+      #edit-selectors details .details-wrapper {
+        padding: 0;
+      }
+
+      pre {
+        background: #f5f5f2;
+        border-top: 1px solid #ccc;
+        font-weight: 400;
+        margin: 0;
+        padding: 1em 0.5em;
+      }
+
+      // Toolbar tray, while being awesome to use, messes up responsive design so much
+      // it's unusable in the front end, however we must try to support it at least
+      // in admin.
+      @media all and (min-width: 60em) {
+        select {
+          max-width: 160px;
+        }
+      }
+
+      @media all and (min-width: 75em) {
+        select {
+          max-width: 90%;
+        }
+
+        @at-root .toolbar-tray-open #edit-layouts #edit-adv-options select {
+          max-width: 160px;
+        }
+      }
+    }
+
+    #edit-settings-max-width-value {
+      max-width: 6em;
+    }
+
+    .submit--layout {
+      background: #f7fcff;
+      border-top: 1px solid #bfbfba;
+      clear: both;
+      margin: 0;
+      padding: 1em 0.5em;
+      position: relative;
+      z-index: 10;
+    }
+
+    h2,
+    h3,
+    h4,
+    h5 {
+      font-size: 1em;
+      text-transform: uppercase;
+    }
+
+    .fieldset-wrapper {
+      overflow: hidden;
+    }
+
+    #edit-settings-layouts-disabled {
+      font-size: 0.923em;
+      line-height: 1.295em;
+      color: #777;
+    }
+
+    .form-item-settings-layouts-enable {
+      margin: 0;
+    }
+
+    .layouts-column {
+  	  border-top: 1px solid #bfbfba;
+  	  margin-top: 0;
+    }
+
+    .layouts-column-two {
+      details {
+        border: 0 none;
+        margin: 0;
+      }
+    }
+
+    .breakpoint-group-values {
+      margin: 0;
+      padding: 0;
+      font-size: 0.923em;
+      line-height: 1.295em;
+      color: #666;
+    }
+
+    dl {
+      dt {
+        font-weight: 700;
+      }
+
+      dd {
+        margin: 0;
+        margin-bottom: 0.5em;
+      }
+    }
+
+    .column-select-layouts {
+      clear: right;
+    }
+
+
+    // new page layout fieldsets
+    #edit-layout-select {
+
+      fieldset {
+        background: none repeat scroll 0 0 transparent;
+        line-height: 1;
+        margin: 0 0 10px;
+        padding: 0;
+      }
+
+      select {
+        min-width: 18em;
+        max-width: 90%;
+      }
+
+      @media all and (min-width: 60em) {
+        .form-type-select {
+          width: 75%;
+          float: left;
+          margin: 0;
+          padding: 0;
+
+          label {
+            float: left;
+            width: 10em;
+          }
+        }
+      }
+
+      details .details-wrapper {
+        padding: 10px;
+      }
+
+      details details {
+        margin: 10px 0;
+        border: 0;
+        padding: 0 0 10px;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+
+        summary {
+          color: #0074bd;
+
+          &:focus {
+            border-top: 0;
+            margin-top: 0;
+          }
+        }
+      }
+
+      .css-layout-options {
+        .region {
+          box-sizing: border-box;
+          text-align: left;
+          margin-bottom: 1.69492%;
+          transition: all, .15s, ease-in;
+
+          span {
+            display: block;
+            background-color: #b2b2b2;
+            font-size: 0.8rem;
+            height: 1.5em;
+            padding: 0.3em 0 0 0.45em;
+            color: #f5f5f5;
+          }
+        }
+      }
+    }
+  }
+
+
+  #edit-suggestions {
+    background: #f7fcff;
+
+    label {
+      padding-bottom: 10px
+    }
+
+    .description {
+      @include visually-hidden-off;
+      font-size: 0.9em;
+      margin-top: 20px;
+    }
+
+    ol,
+    .suggestions-ts-name-desc {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+
+  #edit-options,
+  .form-item-layout-suggestion,
+  #edit-no-mq-css {
+    clear: both;
+  }
+
+
+  #edit-options {
+    .form-disabled {
+      background: #f7f7f7;
+      margin: 0;
+      padding: 1em 0;
+    }
+  }
+
+
+  #edit-max-width {
+    [class*="form-item-settings-max-width-"] {
+      display: inline-block;
+      margin-right: 3px;
+    }
+  }
+
+
+  @media (max-width: 48em) {
+    #edit-layouts {
+      .form-radios label {
+        max-width: 120px;
+      }
+    }
+  }
+
+  @media (max-width: 56em) {
+    #edit-default-layout {
+      float: none;
+      clear: both;
+      margin: 0;
+      padding: 0 0 10px;
+    }
+  }
+
+}
+
+// Set these here again in case someone is not using Seven, however this theme is REALLY designed to use Seven admin theme
+// and nothing else, everything might break because this is so propriatary.
+#edit-layouts {
+  .fieldset-wrapper {
+    overflow: hidden;
+  }
+
+  .css-layout-options {
+    .region {
+      box-sizing: border-box;
+      text-align: left;
+      margin-bottom: 1.69492%;
+      transition: all, .15s, ease-in;
+
+      span {
+        display: block;
+        background-color: #b2b2b2;
+        font-size: 0.8rem;
+        height: 1.5em;
+        padding: 0.3em 0 0 0.45em;
+        color: #f5f5f5;
+      }
+    }
+  }
+}
+
+

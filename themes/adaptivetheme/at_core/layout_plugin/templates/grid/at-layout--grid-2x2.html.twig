@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Adaptivetheme implementation to display 2x2 grid Layout Plugin layout.
+ *
+ * Available variables:
+ * - content: all output
+ * - attributes: layout attributes
+#}
+<{{ html_element }}{{ attributes.addClass('clearfix') }}>
+  {# Row 1 #}
+  {% if content.r1c1 %}
+    <div class="atl__lc lc-r1c1">
+      {{ content.r1c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r1c2 %}
+    <div class="atl__lc lc-r1c2">
+      {{ content.r1c2 }}
+    </div>
+  {% endif %}
+
+  {# Row 2 #}
+  {% if content.r2c1 %}
+    <div class="atl__lc lc-r2c1">
+      {{ content.r2c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r2c2 %}
+    <div class="atl__lc lc-r2c2">
+      {{ content.r2c2 }}
+    </div>
+  {% endif %}
+</{{ html_element }}>

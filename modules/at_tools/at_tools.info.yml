@@ -1,0 +1,11 @@
+name: AT Tools
+type: module
+description: Module level fixes to support Adpativetheme in Drupal core
+# core: 8.x
+package: Adaptivethemes
+
+# Information added by Drupal.org packaging script on 2016-07-11
+version: '8.x-1.0-rc2'
+core: '8.x'
+project: 'at_tools'
+datestamp: 1468240748

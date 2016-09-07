@@ -1,0 +1,2 @@
+!function(){Drupal.behaviors.atOrientationChangeReload={attach:function(){window.addEventListener("orientationchange",function(){document.body.style.display="none",window.location.reload()})}}}();
+//# sourceMappingURL=at.orientationChangeReload.min.js.map

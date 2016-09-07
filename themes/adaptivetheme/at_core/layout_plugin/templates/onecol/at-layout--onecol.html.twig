@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * Adaptivetheme implementation to display a one column Layout Plugin layout.
+ *
+ * Available variables:
+ * - content: all output
+ * - attributes: layout attributes
+#}
+<{{ html_element }}{{ attributes.addClass('clearfix') }}>
+  <div class="atl__lr clearfix">
+    <div class="atl__lc lc-1">
+      {{ content.col_1 }}
+    </div>
+  </div>
+</{{ html_element }}>

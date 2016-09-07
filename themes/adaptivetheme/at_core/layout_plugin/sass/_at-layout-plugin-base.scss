@@ -1,0 +1,25 @@
+//
+// Import required plugins and define base variables.
+//
+// Don't write any actual styles here, it's just for configuration and imports.
+// ---------------------------------------------------------------------------
+
+// Requirements
+@import "susy";
+
+
+//// Susy default settings override
+//// http://susy.readthedocs.org/en/latest/settings/#global-defaults
+$susy: (
+  global-box-sizing: border-box
+);
+
+// Flow Direction
+// Set variables for the flow direction. These variables are used
+// in some layouts to account for RTL languages. They're also used
+// extensively in the UIKit. You can switch to a fully RTL compatible
+// theme by changing the $susy "flow" setting to "rtl". You must
+// re-compile your CSS for this to take affect.
+$flow-direction: susy-get(flow, $susy) !global;
+$flow-to: to($flow-direction);
+$flow-from: from($flow-direction);

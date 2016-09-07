@@ -1,0 +1,110 @@
+{#
+/**
+ * @file
+ * Adaptivetheme implementation to display 4x4 grid Layout Plugin layout.
+ *
+ * Available variables:
+ * - content: all output
+ * - attributes: layout attributes
+#}
+<{{ html_element }}{{ attributes.addClass('clearfix') }}>
+  {# Row 1 #}
+  {% if content.r1c1 %}
+    <div class="atl__lc lc-r1c1">
+      {{ content.r1c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r1c2 %}
+    <div class="atl__lc lc-r1c2">
+      {{ content.r1c2 }}
+    </div>
+  {% endif %}
+
+  {% if content.r1c3 %}
+    <div class="atl__lc lc-r1c3">
+      {{ content.r1c3 }}
+    </div>
+  {% endif %}
+
+  {% if content.r1c4 %}
+    <div class="atl__lc lc-r1c4">
+      {{ content.r1c4 }}
+    </div>
+  {% endif %}
+
+  {# Row 2 #}
+  {% if content.r2c1 %}
+    <div class="atl__lc lc-r2c1">
+      {{ content.r2c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r2c2 %}
+    <div class="atl__lc lc-r2c2">
+      {{ content.r2c2 }}
+    </div>
+  {% endif %}
+
+  {% if content.r2c3 %}
+    <div class="atl__lc lc-r2c3">
+      {{ content.r2c3 }}
+    </div>
+  {% endif %}
+
+  {% if content.r2c4 %}
+    <div class="atl__lc lc-r2c4">
+      {{ content.r2c4 }}
+    </div>
+  {% endif %}
+
+  {# Row 3 #}
+  {% if content.r3c1 %}
+    <div class="atl__lc lc-r3c1">
+      {{ content.r3c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r3c2 %}
+    <div class="atl__lc lc-r3c2">
+      {{ content.r3c2 }}
+    </div>
+  {% endif %}
+
+  {% if content.r3c3 %}
+    <div class="atl__lc lc-r3c3">
+      {{ content.r3c3 }}
+    </div>
+  {% endif %}
+
+  {% if content.r3c4 %}
+    <div class="atl__lc lc-r3c4">
+      {{ content.r3c4 }}
+    </div>
+  {% endif %}
+
+  {# Row 4 #}
+  {% if content.r4c1 %}
+    <div class="atl__lc lc-r4c1">
+      {{ content.r4c1 }}
+    </div>
+  {% endif %}
+
+  {% if content.r4c2 %}
+    <div class="atl__lc lc-r4c2">
+      {{ content.r4c2 }}
+    </div>
+  {% endif %}
+
+  {% if content.r4c3 %}
+    <div class="atl__lc lc-r4c3">
+      {{ content.r4c3 }}
+    </div>
+  {% endif %}
+
+  {% if content.r4c4 %}
+    <div class="atl__lc lc-r4c4">
+      {{ content.r4c4 }}
+    </div>
+  {% endif %}
+</{{ html_element }}>
