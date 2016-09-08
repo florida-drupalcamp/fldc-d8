@@ -1,4 +1,4 @@
-/* Layout CSS for: page.html.twig, generated: Wed, 07 Sep 16 12:48:54 -0400 */
+/* Layout CSS for: page.html.twig, generated: Thu, 08 Sep 16 08:50:21 -0400 */
 .l-rw { max-width: 75em; margin-left: auto; margin-right: auto; }
 .l-rw:after { content: " "; display: block; clear: both; }
 @media all and (min-width: 60.063em) {
@@ -36,3 +36,4 @@
 .pr-subfeatures .arc--3 .l-r:last-child { clear: both; }
 .pr-subfeatures .arc--4 .l-r:nth-child(2n) { float: right; margin-right: 0; }
 }
+.l-rw { max-width: 100%; }
