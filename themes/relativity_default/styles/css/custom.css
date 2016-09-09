@@ -1,0 +1,28 @@
+
+
+/* Schedule Item Wrapper */
+
+.view-schedule .session {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: solid 2px #0E73AF;
+}
+
+/ * Schedule Item Title */
+
+.sche-title {
+    font-size: 22px;
+}
+
+/* Schedule Item Related Nodes */
+
+.view-schedule .session .views-field {
+    width: auto;
+    margin-right: 5em;
+}
+
+.view-schedule .session .views-field-field-sche-sess-ref {
+    max-width: 10em;
+}
+
+
