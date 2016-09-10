@@ -1,4 +1,4 @@
-/* Layout CSS for: page.html.twig, generated: Thu, 08 Sep 16 08:50:21 -0400 */
+/* Layout CSS for: page.html.twig, generated: Sat, 10 Sep 16 19:50:32 -0400 */
 .l-rw { max-width: 75em; margin-left: auto; margin-right: auto; }
 .l-rw:after { content: " "; display: block; clear: both; }
 @media all and (min-width: 60.063em) {
@@ -37,3 +37,13 @@
 .pr-subfeatures .arc--4 .l-r:nth-child(2n) { float: right; margin-right: 0; }
 }
 .l-rw { max-width: 100%; }
+.pr-leaderboard__rw { max-width: 90em; }
+.pr-header__rw { max-width: 90em; }
+.pr-navbar__rw { max-width: 90em; }
+.pr-highlighted__rw { max-width: 90em; }
+.pr-features__rw { max-width: 90em; }
+.pr-content-prefix__rw { max-width: 90em; }
+.pr-main__rw { max-width: 90em; }
+.pr-content-suffix__rw { max-width: 90em; }
+.pr-subfeatures__rw { max-width: 90em; }
+.pr-footer__rw { max-width: 90em; }
